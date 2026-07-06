@@ -1219,8 +1219,8 @@
     siteSettings = {
       siteName: document.getElementById('settings-sitename').value.trim() || 'The Forbidden Style',
       contactMode: mode ? mode.value : 'phone',
-      phone: document.getElementById('settings-phone').value.trim() || '0876 127 997',
-      hours: document.getElementById('settings-hours').value.trim() || 'Всеки ден',
+      phone: (mode && mode.value === 'email') ? '' : (document.getElementById('settings-phone').value.trim() || '0876 127 997'),
+      hours: (mode && mode.value === 'email') ? '' : (document.getElementById('settings-hours').value.trim() || 'Всеки ден'),
       eyebrow: document.getElementById('settings-eyebrow').value.trim() || 'Нова колекция 2026',
       hero: document.getElementById('settings-hero').value.trim() || 'Живей с Аура',
       productsSubtitle: document.getElementById('settings-products-subtitle').value.trim(),
