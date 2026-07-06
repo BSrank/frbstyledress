@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — The Forbidden Style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a; --surface: #111111; --surface2: #1a1a1a;
+      --border: #2a2a2a; --text: #f0ece4; --muted: #888;
+      --accent: #c9a96e; --accent2: #e8d5b0;
+      --danger: #e05252; --success: #52c07a; --info: #5299e0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: var(--surface); border: 1px solid var(--border); padding: 3rem 2.5rem; width: min(380px, 90vw); border-radius: 4px; text-align: center; }
+    .login-box h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 400; margin-bottom: 0.3rem; }
+    .login-box h1 span { color: var(--accent); }
+    .login-box p { font-size: 0.8rem; color: var(--muted); margin-bottom: 2rem; }
+    .login-box input { width: 100%; padding: 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; border-radius: 2px; outline: none; margin-bottom: 1rem; text-align: center; letter-spacing: 0.15em; }
+    .login-box input:focus { border-color: var(--accent); }
+    .login-btn { width: 100%; padding: 13px; background: var(--accent); color: #000; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; border-radius: 2px; }
+    .login-error { color: var(--danger); font-size: 0.8rem; margin-top: 0.8rem; display: none; }
+    .admin-panel { display: none; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 4%; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--text); }
+    .nav-logo span { color: var(--accent); }
+    .nav-badge { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 2px; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 16px; cursor: pointer; font-size: 0.78rem; border-radius: 2px; font-family: 'DM Sans', sans-serif; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .admin-content { padding: 2rem 4%; max-width: 1200px; margin: 0 auto; }
+    .toolbar { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .toolbar-title { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 400; margin-right: auto; }
+    .btn { padding: 9px 20px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid var(--border); transition: all 0.2s; }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-ghost { background: none; color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 2rem; }
+    .stat-box { background: var(--surface); padding: 1.2rem 1.5rem; }
+    .stat-label { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+    .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--accent); }
+    .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .tab { padding: 10px 20px; background: none; border: none; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .product-table { width: 100%; border-collapse: collapse; }
+    .product-table th { text-align: left; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); }
+    .product-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 0.88rem; }
+    .product-table tr:hover td { background: var(--surface2); }
+    .cat-pill { display: inline-block; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; }
+    .cat-pill.clothes { background: rgba(201,169,110,0.1); color: var(--accent); }
+    .cat-pill.bracelets { background: rgba(82,153,224,0.1); color: var(--info); }
+    .cat-pill.speakers { background: rgba(82,192,122,0.1); color: var(--success); }
+    .qty-input { width: 70px; padding: 6px 8px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 0.9rem; border-radius: 2px; text-align: center; outline: none; }
+    .size-stocks { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .size-stock-input { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .size-stock-input label { font-size: 0.62rem; color: var(--muted); }
+    .size-stock-input input[type=number] { width: 50px; padding: 5px 6px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 0.85rem; border-radius: 2px; text-align: center; outline: none; }
+    .cat-toggles-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; }
+    .cat-toggles-label { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    .cat-toggles-row { display: flex; gap: 1px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .cat-toggle-item { flex: 1; background: var(--surface2); padding: 1rem 1.2rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; transition: background 0.2s; user-select: none; }
+    .cat-toggle-item:hover { background: #222; }
+    .cat-toggle-icon { font-size: 1.6rem; }
+    .cat-toggle-name { font-size: 0.8rem; color: var(--text); font-weight: 500; }
+    .cat-toggle-status { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .cat-toggle-status.on { color: var(--success); }
+    .visibility-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .toggle-switch { position: relative; width: 38px; height: 21px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; transition: background 0.25s, border-color 0.25s; flex-shrink: 0; }
+    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; background: var(--muted); border-radius: 50%; transition: transform 0.25s, background 0.25s; }
+    .toggle-switch.on { background: rgba(82,192,122,0.15); border-color: var(--success); }
+    .toggle-switch.on::after { transform: translateX(17px); background: var(--success); }
+    .toggle-label { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+    .toggle-label.on { color: var(--success); }
+    .save-row-btn { padding: 6px 14px; border-radius: 2px; cursor: pointer; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Sans', sans-serif; background: none; border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
+    .save-row-btn:hover { border-color: var(--success); color: var(--success); }
+    .save-row-btn.saved { border-color: var(--success); color: var(--success); background: rgba(82,192,122,0.08); }
+    .edit-btn { padding: 6px 10px; border-radius: 2px; cursor: pointer; font-size: 0.72rem; font-family: 'DM Sans', sans-serif; background: none; border: 1px solid rgba(82,153,224,0.3); color: var(--info); transition: all 0.2s; }
+    .edit-btn:hover { background: rgba(82,153,224,0.1); }
+    .scan-btn { padding: 6px 10px; border-radius: 2px; cursor: pointer; font-size: 0.72rem; font-family: 'DM Sans', sans-serif; background: none; border: 1px solid rgba(201,169,110,0.3); color: var(--accent); transition: all 0.2s; white-space: nowrap; }
+    .scan-btn:hover { background: rgba(201,169,110,0.1); }
+    .scan-btn.scanning { opacity: 0.6; cursor: wait; }
+
+    /* EDIT MODAL */
+    .edit-modal { display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.85); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem; }
+    .edit-modal.open { display:flex; }
+    .edit-box { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:2rem; width:min(520px,100%); max-height:90vh; overflow-y:auto; }
+    .edit-box h3 { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:400; margin-bottom:1.5rem; }
+    .edit-form-group { display:flex; flex-direction:column; gap:0.35rem; margin-bottom:1rem; }
+    .edit-form-group label { font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+    .edit-form-group input, .edit-form-group textarea, .edit-form-group select { padding:9px 11px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.88rem; border-radius:2px; outline:none; appearance:none; }
+    .edit-form-group textarea { resize:vertical; min-height:80px; }
+    .edit-actions { display:flex; gap:1rem; margin-top:1.5rem; }
+    .add-product-section { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.5rem; margin-top: 2rem; }
+    .add-product-section h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400; margin-bottom: 1.2rem; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .form-group input, .form-group select, .form-group textarea { padding: 9px 11px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; border-radius: 2px; outline: none; appearance: none; }
+    .form-group select option { background: var(--surface2); }
+    textarea { resize: vertical; min-height: 60px; }
+    .sizes-add-grid { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.3rem; }
+    .size-add-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .size-add-item label { font-size: 0.65rem; color: var(--muted); }
+    .size-add-item input { width: 55px; padding: 6px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 0.85rem; border-radius: 2px; text-align: center; outline: none; }
+    .orders-table { width: 100%; border-collapse: collapse; }
+    .orders-table th { text-align: left; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--border); }
+    .orders-table td { padding: 0.8rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; vertical-align: top; }
+    .orders-table tr:hover td { background: var(--surface2); }
+    .order-items-list { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+    .toast { position: fixed; bottom: 30px; right: 30px; background: var(--surface); border: 1px solid var(--border); padding: 12px 20px; border-radius: 4px; font-size: 0.85rem; z-index: 999; transform: translateY(20px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
+    .emoji-opt { font-size:1.4rem; cursor:pointer; padding:4px; border-radius:4px; transition:background 0.15s; line-height:1; }
+    .emoji-opt:hover { background:var(--surface2); }
+    @media (max-width: 700px) { .stats { grid-template-columns: 1fr 1fr; } .product-table, .orders-table { font-size: 0.78rem; } .cat-toggles-row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1><em style="font-style:italic;font-weight:300;font-size:0.85em;">the</em> forbidden<span> style</span></h1>
+    <p>Admin панел — въведи парола</p>
+    <input type="password" id="passwordInput" placeholder="Парола" onkeydown="if(event.key==='Enter')login()" />
+    <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)" style="margin-bottom:1rem;" />
+    <button class="login-btn" onclick="login()">Влез</button>
+    <p class="login-error" id="loginError">Грешна парола. Опитай отново.</p>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <nav>
+    <span class="nav-logo"><em style="font-style:italic;font-weight:300;font-size:0.85em;">the</em> forbidden<span> style</span></span>
+    <span class="nav-badge">Admin</span>
+    <button class="logout-btn" onclick="logout()">Изход</button>
+  </nav>
+  <div class="admin-content">
+    <div class="toolbar">
+      <h2 class="toolbar-title">Управление</h2>
+      <span class="saving-indicator" id="savingIndicator"></span>
+      <button class="btn btn-ghost" onclick="loadData()">⟳ Обнови</button>
+      <button class="btn btn-primary" onclick="showTab('add')">+ Нов продукт</button>
+    </div>
+
+    <div class="cat-toggles-box">
+      <p class="cat-toggles-label">Активни категории в сайта</p>
+      <div class="cat-toggles-row">
+        <div class="cat-toggle-item" onclick="toggleCategory('clothes')">
+          <div class="cat-toggle-icon">👕</div>
+          <div class="cat-toggle-name">Дрехи</div>
+          <div class="toggle-switch" id="cattoggle-clothes"></div>
+          <div class="cat-toggle-status" id="catstate-clothes">Изключена</div>
+        </div>
+        <div class="cat-toggle-item" onclick="toggleCategory('bracelets')">
+          <div class="cat-toggle-icon">⌚</div>
+          <div class="cat-toggle-name">Смарт гривни</div>
+          <div class="toggle-switch" id="cattoggle-bracelets"></div>
+          <div class="cat-toggle-status" id="catstate-bracelets">Изключена</div>
+        </div>
+        <div class="cat-toggle-item" onclick="toggleCategory('speakers')">
+          <div class="cat-toggle-icon">🔊</div>
+          <div class="cat-toggle-name">Тонколонки</div>
+          <div class="toggle-switch" id="cattoggle-speakers"></div>
+          <div class="cat-toggle-status" id="catstate-speakers">Изключена</div>
+        </div>
+        <div id="customCatToggles"></div>
+      </div>
+      <p style="font-size:0.72rem; color:var(--muted); margin-top:0.8rem;">Включена категория → всичките ѝ продукти стават видими. Изключена → изчезват от сайта.</p>
+    </div>
+
+    <!-- URGENCY BOX -->
+    <div class="cat-toggles-box">
+      <p class="cat-toggles-label">Маркетинг — Ограничено количество</p>
+      <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+        <div class="visibility-toggle" onclick="toggleUrgency()">
+          <div class="toggle-switch" id="urgencyToggle"></div>
+          <span class="toggle-label" id="urgencyLabel">Изключено</span>
+        </div>
+        <div id="urgencyQtyWrap" style="display:none; align-items:center; gap:0.8rem;">
+          <span style="font-size:0.78rem; color:var(--muted);">Показвай "само</span>
+          <input type="number" id="urgencyQty" value="2" min="1" max="99"
+            style="width:60px; padding:6px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-size:0.9rem; border-radius:2px; text-align:center; outline:none;"
+            onchange="saveUrgencySettings()" />
+          <span style="font-size:0.78rem; color:var(--muted);">бройки налични"</span>
+        </div>
+      </div>
+      <p style="font-size:0.72rem; color:var(--muted); margin-top:0.8rem;">
+        Когато е включено — показва "само X бройки" на всички продукти. Не влияе на реалните наличности или поръчките.
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-box"><div class="stat-label">Продукти</div><div class="stat-value" id="statProducts">—</div></div>
+      <div class="stat-box"><div class="stat-label">Активни</div><div class="stat-value" id="statOut">—</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-inventory" onclick="showTab('inventory')">📦 Продукти</button>
+      <button class="tab" id="tab-orders" onclick="showTab('orders')">🧾 Поръчки</button>
+      <button class="tab" id="tab-add" onclick="showTab('add')">➕ Нов продукт</button>
+      <button class="tab" id="tab-settings" onclick="showTab('settings')">⚙ Настройки</button>
+    </div>
+
+    <div id="pane-inventory">
+      <div id="inventoryLoading" style="text-align:center;padding:3rem;color:var(--muted);">Зареждане...</div>
+      <div id="inventoryTable" style="display:none; overflow-x:auto;">
+        <table class="product-table">
+          <thead><tr><th>ID (за снимки)</th><th>Продукт</th><th>Покажи в сайта</th><th>Категория</th><th>Цена (лв)</th><th>Наличност</th><th>Запис</th><th></th></tr></thead>
+          <tbody id="inventoryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="pane-orders" style="display:none;">
+      <div id="ordersLoading" style="text-align:center;padding:3rem;color:var(--muted);">Зареждане...</div>
+      <div id="ordersTable" style="display:none; overflow-x:auto;">
+        <table class="orders-table">
+          <thead><tr><th>Дата</th><th>Клиент</th><th>Телефон</th><th>Куриер / Офис</th><th>Продукти</th><th>Сума</th></tr></thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="pane-add" style="display:none;">
+      <div class="add-product-section">
+        <h3>Добави нов продукт</h3>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Наименование *</label>
+            <input type="text" id="np-name" placeholder="Naziv na produkta" />
+          </div>
+          <div class="form-group">
+            <label>Категория *</label>
+            <select id="np-cat" onchange="toggleSizesSection()">
+              <option value="">Избери</option>
+              <option value="clothes">👕 Дрехи</option>
+              <option value="bracelets">⌚ Смарт гривни</option>
+              <option value="speakers">🔊 Тонколонки</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Цена (лв) *</label>
+            <input type="number" id="np-price" placeholder="45" min="1" />
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Описание</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+              <div class="visibility-toggle" onclick="toggleFormatDesc('np')">
+                <div class="toggle-switch" id="np-format-toggle"></div>
+                <span class="toggle-label" id="np-format-label">Обикновен текст</span>
+              </div>
+            </div>
+            <textarea id="np-desc" placeholder="Кратко описание" style="min-height:80px;"></textarea>
+            <div id="np-format-hint" style="display:none;font-size:0.68rem;color:var(--muted);margin-top:4px;line-height:1.6;">
+              Формат: ред с <code style="background:var(--surface2);padding:1px 4px;">:</code> накрая = хедър &nbsp;|&nbsp; ред с <code style="background:var(--surface2);padding:1px 4px;">→</code> или <code style="background:var(--surface2);padding:1px 4px;">-</code> = точка &nbsp;|&nbsp; <code style="background:var(--surface2);padding:1px 4px;">**текст**</code> = bold &nbsp;|&nbsp; празен ред = разделител
+            </div>
+          </div>
+        </div>
+        <div id="sizesSection" style="display:none; margin-top:1.2rem;">
+          <div class="form-group">
+            <label>Количества по размер</label>
+            <div class="sizes-add-grid">
+              <div class="size-add-item"><label>XS</label><input type="number" id="sz-XS" value="0" min="0"/></div>
+              <div class="size-add-item"><label>S</label><input type="number" id="sz-S" value="0" min="0"/></div>
+              <div class="size-add-item"><label>M</label><input type="number" id="sz-M" value="0" min="0"/></div>
+              <div class="size-add-item"><label>L</label><input type="number" id="sz-L" value="0" min="0"/></div>
+              <div class="size-add-item"><label>XL</label><input type="number" id="sz-XL" value="0" min="0"/></div>
+              <div class="size-add-item"><label>XXL</label><input type="number" id="sz-XXL" value="0" min="0"/></div>
+            </div>
+          </div>
+        </div>
+        <div id="qtySection" style="margin-top:1.2rem;">
+          <div class="form-group" style="max-width:160px;">
+            <label>Количество</label>
+            <input type="number" id="np-qty" placeholder="10" min="0" />
+          </div>
+        </div>
+        <div style="margin-top:1.2rem;">
+          <div class="visibility-toggle" onclick="toggleNewProductActive()">
+            <input type="checkbox" id="np-active" style="display:none;" />
+            <div class="toggle-switch" id="np-active-toggle"></div>
+            <span class="toggle-label" id="np-active-label">Ще остане скрит</span>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem; display:flex; gap:1rem;">
+          <button class="btn btn-primary" onclick="addProduct()">Добави продукт</button>
+          <button class="btn btn-ghost" onclick="showTab('inventory')">Отказ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANE -->
+    <div id="pane-settings" style="display:none;">
+      <div class="add-product-section">
+        <h3>Настройки на сайта</h3>
+
+        <!-- THEME SELECTOR -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Тема на сайта</p>
+          <div id="themeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Цветове, шрифтове и стил на бутоните се сменят. Всички настройки и продукти остават.</p>
+        </div>
+
+        <!-- CATEGORIES VISIBILITY -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Категории на началната страница</p>
+          <div class="visibility-toggle" onclick="toggleSettingToggle('showCategories')">
+            <div class="toggle-switch" id="toggle-showCategories"></div>
+            <span class="toggle-label" id="label-showCategories">Показани</span>
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Изключи за да скриеш картите с категории. "Намери своя стил" заглавието остава.</p>
+          <div class="form-group" style="max-width:360px; margin-top:0.8rem;">
+            <label>Подзаглавие на продуктите</label>
+            <input type="text" id="settings-products-subtitle" placeholder="The Forbidden Style — Collection" />
+          </div>
+        </div>
+
+        <!-- HERO TEXT -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Hero текст</p>
+          <div class="form-group" style="max-width:360px; margin-bottom:0.8rem;">
+            <label>Горен малък текст (eyebrow)</label>
+            <input type="text" id="settings-eyebrow" placeholder="Нова колекция 2026" />
+          </div>
+          <div class="form-group" style="max-width:360px;">
+            <label>Главно заглавие</label>
+            <input type="text" id="settings-hero" placeholder="Живей с Аура" />
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Стилът остава непроменен — само текстът се сменя.</p>
+        </div>
+
+        <!-- SITE NAME -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Име на сайта</p>
+          <div class="form-group" style="max-width:360px;">
+            <label>Показвано име (nav лого + заглавие)</label>
+            <input type="text" id="settings-sitename" placeholder="The Forbidden Style" />
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Промяната се вижда в nav логото и заглавието на браузъра.</p>
+        </div>
+
+        <!-- TERMS OF SERVICE -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Условия за ползване (Terms)</p>
+          <div style="margin-bottom:1rem;">
+            <div class="visibility-toggle" onclick="toggleSettingToggle('showTerms')">
+              <div class="toggle-switch" id="toggle-showTerms"></div>
+              <span class="toggle-label" id="label-showTerms">Скрити</span>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0.8rem;">
+            <label>⚠️ Червен Alert банер (незадължително)</label>
+            <textarea id="settings-terms-alert" placeholder="Важно: Доставките се извършват само в рамките на България." style="min-height:60px;"></textarea>
+          </div>
+          <div class="form-group" style="max-width:200px; margin-bottom:0.8rem;">
+            <label>Дата на актуализация</label>
+            <input type="text" id="settings-terms-date" placeholder="01.07.2026" />
+          </div>
+          <div id="termsSectionsList" style="display:flex;flex-direction:column;gap:0.8rem;margin-bottom:1rem;"></div>
+          <button class="btn btn-ghost" onclick="addTermsSection()" id="addTermsBtn" style="font-size:0.75rem;">+ Добави секция</button>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">
+            Формат: <code style="background:var(--surface2);padding:1px 5px;">**bold**</code> · ред с <code style="background:var(--surface2);padding:1px 5px;">→</code> = точка · ред с <code style="background:var(--surface2);padding:1px 5px;">!</code> = highlight box
+          </p>
+        </div>
+
+        <!-- REVIEWS -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Отзиви от клиенти (макс. 6)</p>
+          <div id="reviewsList" style="display:flex;flex-direction:column;gap:0.8rem;margin-bottom:1rem;"></div>
+          <button class="btn btn-ghost" onclick="addReview()" id="addReviewBtn" style="font-size:0.75rem;">+ Добави отзив</button>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Показват се на началната страница преди "Свържи се с нас". Празни отзиви се пропускат.</p>
+        </div>
+
+        <!-- GOOGLE SCRIPT URL -->
+          <div class="form-group" style="max-width:100%;">
+            <label>Постави новия URL от Google Apps Script</label>
+            <input type="text" id="settings-scripturl" placeholder="https://script.google.com/macros/s/..." style="font-size:0.78rem;letter-spacing:0;" />
+          </div>
+          <div id="scripturl-status" style="font-size:0.72rem;margin-top:0.5rem;color:var(--muted);"></div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">URL-ът се кодира автоматично — никой не може да го види в сорс кода.</p>
+        </div>
+
+        <!-- CONTACT MODE -->
+        <div style="margin-bottom:2rem;">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Контакт секция</p>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="radio" name="contactMode" value="phone" id="contact-phone" style="accent-color:var(--accent);" />
+              <span style="font-size:0.85rem;">📞 Телефонен номер</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="radio" name="contactMode" value="email" id="contact-email" style="accent-color:var(--accent);" />
+              <span style="font-size:0.85rem;">✉️ Мейл форма</span>
+            </label>
+          </div>
+          <div id="settings-phone-fields">
+            <div class="form-group" style="max-width:280px;">
+              <label>Телефонен номер</label>
+              <input type="text" id="settings-phone" placeholder="0876 127 997" />
+            </div>
+            <div class="form-group" style="max-width:280px; margin-top:0.8rem;">
+              <label>Работно време</label>
+              <input type="text" id="settings-hours" placeholder="Всеки ден" />
+            </div>
+          </div>
+          <div id="settings-email-fields" style="display:none;">
+            <p style="font-size:0.82rem;color:var(--muted);">Клиентите ще виждат форма с Име, Имейл и Съобщение. Мейлът ще дойде при теб.</p>
+          </div>
+        </div>
+
+        <!-- CUSTOM CATEGORIES -->
+        <div style="margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border);">
+          <p class="cat-toggles-label" style="margin-bottom:1rem;">Персонализирани категории</p>
+          <div id="customCatList" style="margin-bottom:1rem;"></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1rem;">
+            <p style="font-size:0.72rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.8rem;">Добави нова категория</p>
+            <div style="display:flex;gap:0.8rem;align-items:flex-start;flex-wrap:wrap;">
+              <div>
+                <div style="font-size:0.68rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;">Емоджи</div>
+                <div style="position:relative;">
+                  <input type="text" id="newcat-emoji" readonly placeholder="🎧" onclick="toggleEmojiPicker()"
+                    style="width:60px;padding:9px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:1.4rem;border-radius:2px;outline:none;text-align:center;cursor:pointer;" />
+                  <div id="emojiPicker" style="display:none;position:absolute;top:44px;left:0;z-index:100;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.8rem;width:280px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+                    <div style="font-size:0.62rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.6rem;">Избери емоджи</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;" id="emojiGrid"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="flex:1;min-width:160px;">
+                <div style="font-size:0.68rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;">Име на категорията *</div>
+                <input type="text" id="newcat-name" placeholder="Слушалки"
+                  style="width:100%;padding:9px 11px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;border-radius:2px;outline:none;" />
+              </div>
+              <div style="padding-top:24px;">
+                <button class="btn btn-primary" onclick="addCustomCategory()" style="white-space:nowrap;">+ Добави</button>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Категориите се появяват в dropdown-а при добавяне на продукт и на началната страница.</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveSettings()">Запази настройките</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="edit-modal" id="editModal">
+  <div class="edit-box">
+    <h3>Редактирай продукт</h3>
+    <input type="hidden" id="edit-idx" />
+    <div class="edit-form-group">
+      <label>Наименование *</label>
+      <input type="text" id="edit-name" placeholder="Име на продукта" />
+    </div>
+    <div class="edit-form-group">
+      <label>Описание</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div class="visibility-toggle" onclick="toggleFormatDesc('edit')">
+          <div class="toggle-switch" id="edit-format-toggle"></div>
+          <span class="toggle-label" id="edit-format-label">Обикновен текст</span>
+        </div>
+      </div>
+      <textarea id="edit-desc" placeholder="Материал, характеристики, грижа..." style="min-height:120px;"></textarea>
+      <div id="edit-format-hint" style="display:none;font-size:0.68rem;color:var(--muted);margin-top:4px;line-height:1.6;">
+        Формат: ред с <code style="background:var(--surface2);padding:1px 4px;">:</code> накрая = хедър &nbsp;|&nbsp; ред с <code style="background:var(--surface2);padding:1px 4px;">→</code> или <code style="background:var(--surface2);padding:1px 4px;">-</code> = точка &nbsp;|&nbsp; <code style="background:var(--surface2);padding:1px 4px;">**текст**</code> = bold &nbsp;|&nbsp; празен ред = разделител
+      </div>
+    </div>
+    <div class="edit-form-group">
+      <label>Цена (лв) *</label>
+      <input type="number" id="edit-price" min="1" />
+    </div>
+    <div class="edit-form-group">
+      <label>Категория</label>
+      <select id="edit-cat">
+        <option value="clothes">👕 Дрехи</option>
+        <option value="bracelets">⌚ Смарт гривни</option>
+        <option value="speakers">🔊 Тонколонки</option>
+      </select>
+    </div>
+    <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">
+      💡 ID и снимките остават непроменени.
+    </p>
+    <div class="edit-actions">
+      <button class="btn btn-primary" onclick="saveEdit()">Запази промените</button>
+      <button class="btn btn-ghost" onclick="closeEdit()">Отказ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─── CONFIG ───
+  var GITHUB_REPO   = 'BSrank/frbstyle';
+  const PRODUCTS_FILE = 'products.json';
+  const SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbx3AdL0FZ0t6ofijx6VW4W3JZCVwXqeW8d32pp2YL2ACiY1DDBzuvli4L0znvtnJezj/exec';
+  const PW_HASH       = '830ec5c1efee9ed79fee45e2a1da3ebb881d97167febdb1b71a35a20229b9956';
+
+  var GITHUB_TOKEN = sessionStorage.getItem('zax_token') || '';
+
+  // ─── AUTH ───
+  async function hashPassword(pw) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+  }
+
+  async function login() {
+    var pw    = document.getElementById('passwordInput').value;
+    var token = document.getElementById('tokenInput').value.trim();
+    var btn   = document.querySelector('.login-btn');
+    btn.textContent = 'Проверка...'; btn.disabled = true;
+    var hash = await hashPassword(pw);
+    if (hash === PW_HASH && token.startsWith('ghp_')) {
+      sessionStorage.setItem('zax_session', '1');
+      sessionStorage.setItem('zax_token', token);
+      GITHUB_TOKEN = token;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('loginError').style.display = 'none';
+      loadData();
+    } else {
+      document.getElementById('loginError').textContent = !token.startsWith('ghp_') ? 'Невалиден GitHub Token.' : 'Грешна парола.';
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+    }
+    btn.textContent = 'Влез'; btn.disabled = false;
+  }
+
+  function logout() { sessionStorage.removeItem('zax_session'); sessionStorage.removeItem('zax_token'); sessionStorage.removeItem('zax_repo'); location.reload(); }
+
+  if (sessionStorage.getItem('zax_session') && sessionStorage.getItem('zax_token')) {
+    GITHUB_TOKEN = sessionStorage.getItem('zax_token');
+    GITHUB_REPO = localStorage.getItem('zax_repo') || 'BSrank/frbstyle';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+  }
+
+  // ─── GITHUB API ───
+  var fileSha = null;
+
+  async function loadProductsFromGitHub() {
+    var res = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+      headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    var data = await res.json();
+    fileSha = data.sha;
+    var raw = data.content.replace(/\n/g,'');
+    var content = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    loadUrgencySettings(content);
+    loadSettings(content);
+    return content.products || [];
+  }
+
+  async function saveProductsToGitHub(products) {
+    setSaving(true);
+    try {
+      // Вземи свежото SHA преди всеки запис за да избегнем 409 Conflict
+      var getRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      var getData = await getRes.json();
+      fileSha = getData.sha;
+
+      var content = btoa(unescape(encodeURIComponent(JSON.stringify({ products: products, urgency: urgencyData, settings: siteSettings }, null, 2))));
+      var body = { message: 'Update products', content: content, sha: fileSha };
+      var res = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data = await res.json();
+      if (data.content) fileSha = data.content.sha;
+      setSaving(false);
+      return res.ok;
+    } catch(e) {
+      setSaving(false);
+      return false;
+    }
+  }
+
+  function setSaving(on) {
+    document.getElementById('savingIndicator').textContent = on ? 'Запазване...' : '';
+  }
+
+  // ─── DATA ───
+  var products = [];
+
+  async function loadData() {
+    document.getElementById('inventoryLoading').style.display = 'block';
+    document.getElementById('inventoryTable').style.display = 'none';
+    try {
+      products = await loadProductsFromGitHub();
+    } catch(e) {
+      products = [];
+      toast('Грешка при зареждане', 'error');
+    }
+    renderInventory();
+    updateStats();
+    syncCategoryToggles();
+  }
+
+  function updateStats() {
+    document.getElementById('statProducts').textContent = products.length;
+    document.getElementById('statOut').textContent = products.filter(function(p) {
+      return p.active === true;
+    }).length;
+  }
+
+  // ─── CATEGORY TOGGLES ───
+  var categoryStates = { clothes: false, bracelets: false, speakers: false };
+
+  // ─── URGENCY ───
+  var urgencyData = { enabled: false, qty: 2 };
+
+  function loadUrgencySettings(data) {
+    urgencyData = data.urgency || { enabled: false, qty: 2 };
+    renderUrgencyUI();
+  }
+
+  function renderUrgencyUI() {
+    var tog = document.getElementById('urgencyToggle');
+    var lbl = document.getElementById('urgencyLabel');
+    var wrap = document.getElementById('urgencyQtyWrap');
+    var qty = document.getElementById('urgencyQty');
+    if (!tog) return;
+    tog.classList.toggle('on', urgencyData.enabled);
+    lbl.classList.toggle('on', urgencyData.enabled);
+    lbl.textContent = urgencyData.enabled ? 'Включено' : 'Изключено';
+    wrap.style.display = urgencyData.enabled ? 'flex' : 'none';
+    qty.value = urgencyData.qty || 2;
+  }
+
+  async function toggleUrgency() {
+    urgencyData.enabled = !urgencyData.enabled;
+    renderUrgencyUI();
+    await saveUrgencySettings();
+  }
+
+  async function saveUrgencySettings() {
+    urgencyData.qty = parseInt(document.getElementById('urgencyQty').value) || 2;
+    var currentData = { products: products, urgency: urgencyData };
+    setSaving(true);
+    try {
+      var getRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      var getData = await getRes.json();
+      fileSha = getData.sha;
+      var content = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+      var res = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Update urgency settings', content: content, sha: fileSha })
+      });
+      var d = await res.json();
+      if (d.content) fileSha = d.content.sha;
+      toast(urgencyData.enabled ? 'Urgency е включен — показва "само ' + urgencyData.qty + ' бройки"' : 'Urgency е изключен', 'success');
+    } catch(e) {
+      toast('Грешка при запис', 'error');
+    }
+    setSaving(false);
+  }
+
+  function renderCustomCatToggles() {
+    var cats = siteSettings.customCategories || [];
+    var container = document.getElementById('customCatToggles');
+    if (!container) return;
+    container.innerHTML = cats.map(function(c) {
+      var isOn = products.some(function(p) { return p.category === c.id && p.active === true; });
+      return '<div class="cat-toggle-item" onclick="toggleCategory(\'' + c.id + '\')" style="min-width:100px;">' +
+        '<div class="cat-toggle-icon">' + c.emoji + '</div>' +
+        '<div class="cat-toggle-name">' + c.name + '</div>' +
+        '<div class="toggle-switch ' + (isOn ? 'on' : '') + '" id="cattoggle-' + c.id + '"></div>' +
+        '<div class="cat-toggle-status ' + (isOn ? 'on' : '') + '" id="catstate-' + c.id + '">' + (isOn ? 'Включена' : 'Изключена') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function syncCategoryToggles() {
+    ['clothes','bracelets','speakers'].forEach(function(cat) {
+      categoryStates[cat] = products.some(function(p) { return p.category === cat && p.active === true; });
+    });
+    renderCategoryToggles();
+    renderCustomCatToggles();
+  }
+
+  function renderCategoryToggles() {
+    ['clothes','bracelets','speakers'].forEach(function(cat) {
+      var isOn = categoryStates[cat];
+      document.getElementById('cattoggle-' + cat).classList.toggle('on', isOn);
+      var st = document.getElementById('catstate-' + cat);
+      st.textContent = isOn ? 'Включена' : 'Изключена';
+      st.classList.toggle('on', isOn);
+    });
+  }
+
+  function catName(cat) {
+    var builtin = { clothes: 'Дрехи', bracelets: 'Смарт гривни', speakers: 'Тонколонки' };
+    if (builtin[cat]) return builtin[cat];
+    var custom = (siteSettings.customCategories || []).find(function(c) { return c.id === cat; });
+    return custom ? custom.name : cat;
+  }
+
+  async function toggleCategory(cat) {
+    var isBuiltin = ['clothes','bracelets','speakers'].includes(cat);
+    var newState = isBuiltin ? !categoryStates[cat] : !products.some(function(p) { return p.category === cat && p.active === true; });
+    if (isBuiltin) categoryStates[cat] = newState;
+    products.forEach(function(p, i) {
+      if (p.category === cat) products[i].active = newState;
+    });
+    renderCategoryToggles();
+    renderCustomCatToggles();
+    renderInventory();
+    updateStats();
+    var ok = await saveProductsToGitHub(products);
+    var label = catName(cat);
+    toast(ok ? 'Категория "' + label + '" е ' + (newState ? 'включена' : 'изключена') : 'Грешка при запис', ok ? 'success' : 'error');
+  }
+
+  // ─── INVENTORY ───
+  function showTab(name) {
+    ['inventory','orders','add','settings'].forEach(function(t) {
+      document.getElementById('pane-' + t).style.display = t === name ? 'block' : 'none';
+      var el = document.getElementById('tab-' + t);
+      if (el) el.classList.toggle('active', t === name);
+    });
+    if (name === 'orders') loadOrders();
+    if (name === 'settings') renderSettingsUI();
+  }
+
+  function renderInventory() {
+    document.getElementById('inventoryLoading').style.display = 'none';
+    document.getElementById('inventoryTable').style.display = 'block';
+    var CAT = { clothes: 'Дрехи', bracelets: 'Смарт гривни', speakers: 'Тонколонки' };
+    document.getElementById('inventoryBody').innerHTML = products.map(function(p, idx) {
+      var hasClothes = p.sizes && p.sizes.length > 0;
+      var stockCell = hasClothes
+        ? '<div class="size-stocks">' + p.sizes.map(function(s) {
+            return '<div class="size-stock-input"><label>' + s.size + '</label><input type="number" min="0" value="' + s.qty + '" id="qty-' + p.id + '-' + s.size + '" /></div>';
+          }).join('') + '</div>'
+        : '<input type="number" class="qty-input" min="0" value="' + (p.qty||0) + '" id="qty-' + p.id + '" />';
+      var isActive = p.active === true;
+      return '<tr>' +
+        '<td><code style="font-size:0.65rem;color:var(--muted);background:var(--surface2);padding:3px 6px;border-radius:2px;user-select:all;">' + p.id + '</code>' +
+        '<br><small style="color:#555;font-size:0.6rem;">images/' + p.category + '/' + p.id + '/</small></td>' +
+        '<td><strong>' + p.name + '</strong></td>' +
+        '<td><div class="visibility-toggle" onclick="toggleActive(' + idx + ')">' +
+          '<div class="toggle-switch ' + (isActive?'on':'') + '" id="toggle-' + p.id + '"></div>' +
+          '<span class="toggle-label ' + (isActive?'on':'') + '" id="tlabel-' + p.id + '">' + (isActive?'Активен':'Скрит') + '</span>' +
+        '</div></td>' +
+        '<td><span class="cat-pill ' + p.category + '">' + (CAT[p.category]||p.category) + '</span></td>' +
+        '<td><input type="number" class="qty-input" min="0" value="' + p.price + '" id="price-' + p.id + '" style="width:80px;" /></td>' +
+        '<td>' + stockCell + '</td>' +
+        '<td><button class="save-row-btn" onclick="saveProduct(' + idx + ')">Запази</button></td>' +
+        '<td style="display:flex;gap:6px;flex-wrap:wrap;">' +
+          '<button class="scan-btn" id="scan-' + p.id + '" onclick="scanImages(' + idx + ')">📷 ' + (p.images && p.images.length ? p.images.length + ' сн.' : 'Сканирай') + '</button>' +
+          '<button class="edit-btn" onclick="openEdit(' + idx + ')">✎ Edit</button>' +
+          '<button class="delete-btn" onclick="deleteProduct(' + idx + ')">✕</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  async function toggleActive(idx) {
+    products[idx].active = !products[idx].active;
+    var isActive = products[idx].active;
+    var p = products[idx];
+    var toggle = document.getElementById('toggle-' + p.id);
+    var label  = document.getElementById('tlabel-' + p.id);
+    if (toggle) { toggle.classList.toggle('on', isActive); }
+    if (label)  { label.classList.toggle('on', isActive); label.textContent = isActive ? 'Активен' : 'Скрит'; }
+    syncCategoryToggles();
+    updateStats();
+    var ok = await saveProductsToGitHub(products);
+    toast(isActive ? 'Продуктът е видим' : 'Продуктът е скрит', ok ? 'success' : 'error');
+  }
+
+  async function saveProduct(idx) {
+    var p = products[idx];
+    var hasClothes = p.sizes && p.sizes.length > 0;
+    products[idx].price = parseFloat(document.getElementById('price-' + p.id).value) || p.price;
+    if (hasClothes) {
+      products[idx].sizes = p.sizes.map(function(s) {
+        return { size: s.size, qty: parseInt(document.getElementById('qty-' + p.id + '-' + s.size).value) || 0 };
+      });
+    } else {
+      products[idx].qty = parseInt(document.getElementById('qty-' + p.id).value) || 0;
+    }
+    var ok = await saveProductsToGitHub(products);
+    toast(ok ? 'Запазено!' : 'Грешка при запис', ok ? 'success' : 'error');
+  }
+
+  async function deleteProduct(idx) {
+    if (!confirm('Изтрий продукта?')) return;
+    products.splice(idx, 1);
+    renderInventory();
+    updateStats();
+    syncCategoryToggles();
+    var ok = await saveProductsToGitHub(products);
+    toast(ok ? 'Продуктът е изтрит' : 'Грешка при изтриване', ok ? 'success' : 'error');
+  }
+
+  // ─── ADD PRODUCT ───
+  function toggleSizesSection() {
+    var cat = document.getElementById('np-cat').value;
+    document.getElementById('sizesSection').style.display = cat === 'clothes' ? 'block' : 'none';
+    document.getElementById('qtySection').style.display   = cat !== 'clothes' ? 'block' : 'none';
+  }
+  toggleSizesSection();
+
+  function toggleNewProductActive() {
+    var cb = document.getElementById('np-active');
+    cb.checked = !cb.checked;
+    document.getElementById('np-active-toggle').classList.toggle('on', cb.checked);
+    var lbl = document.getElementById('np-active-label');
+    lbl.textContent = cb.checked ? 'Ще е видим веднага' : 'Ще остане скрит';
+    lbl.classList.toggle('on', cb.checked);
+  }
+
+  async function createImageFolder(productId, category) {
+    var folderPath = 'images/' + category + '/' + productId + '/.gitkeep';
+    try {
+      await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + folderPath, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Create image folder for ' + productId,
+          content: btoa('')
+        })
+      });
+    } catch(e) {
+      console.warn('Папката не можа да се създаде:', e);
+    }
+  }
+
+  async function addProduct() {
+    var name   = document.getElementById('np-name').value.trim();
+    var cat    = document.getElementById('np-cat').value;
+    var price  = parseFloat(document.getElementById('np-price').value);
+    var desc   = document.getElementById('np-desc').value.trim();
+    var active = document.getElementById('np-active').checked;
+    if (!name || !cat || !price) { toast('Попълни задължителните полета', 'error'); return; }
+
+    var newProduct = {
+      id: 'p_' + Date.now(),
+      name: name, category: cat, price: price, desc: desc,
+      descFormatted: document.getElementById('np-format-toggle').classList.contains('on'),
+      active: active,
+      sizes: cat === 'clothes' ? ['XS','S','M','L','XL','XXL'].map(function(s) {
+        return { size: s, qty: parseInt(document.getElementById('sz-'+s).value) || 0 };
+      }) : [],
+      qty: cat !== 'clothes' ? (parseInt(document.getElementById('np-qty').value) || 0) : 0
+    };
+
+    products.push(newProduct);
+    var ok = await saveProductsToGitHub(products);
+    if (ok) {
+      // Създай папката за снимки автоматично
+      await createImageFolder(newProduct.id, newProduct.category);
+
+      var imagePath = 'images/' + newProduct.category + '/' + newProduct.id + '/';
+      toast('Продуктът е добавен! Папка създадена: ' + imagePath, 'success');
+
+      ['np-name','np-price','np-desc','np-qty'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value=''; });
+      document.getElementById('np-cat').value = '';
+      document.getElementById('np-active').checked = false;
+      document.getElementById('np-active-toggle').classList.remove('on');
+      document.getElementById('np-active-label').textContent = 'Ще остане скрит';
+      document.getElementById('np-active-label').classList.remove('on');
+      ['XS','S','M','L','XL','XXL'].forEach(function(s) { var el = document.getElementById('sz-'+s); if(el) el.value='0'; });
+      showTab('inventory');
+      renderInventory();
+      updateStats();
+      syncCategoryToggles();
+    } else {
+      products.pop();
+      toast('Грешка при запис', 'error');
+    }
+  }
+
+  // ─── TERMS ───
+  function renderTermsSectionsList() {
+    var sections = (siteSettings.terms && siteSettings.terms.sections) || [];
+    var list = document.getElementById('termsSectionsList');
+    if (!list) return;
+    list.innerHTML = sections.map(function(s, i) {
+      return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1rem;position:relative;">' +
+        '<button onclick="removeTermsSection(' + i + ')" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--danger);cursor:pointer;">✕</button>' +
+        '<div class="form-group" style="margin-bottom:0.6rem;"><label>Заглавие на секцията</label>' +
+        '<input type="text" id="terms-title-' + i + '" value="' + (s.title||'').replace(/"/g,'&quot;') + '" placeholder="Доставка" style="padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:DM Sans,sans-serif;font-size:0.82rem;border-radius:2px;outline:none;width:100%;" /></div>' +
+        '<div class="form-group"><label>Съдържание</label>' +
+        '<textarea id="terms-content-' + i + '" style="min-height:100px;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:DM Sans,sans-serif;font-size:0.82rem;border-radius:2px;outline:none;resize:vertical;width:100%;">' + (s.content||'') + '</textarea></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function addTermsSection() {
+    if (!siteSettings.terms) siteSettings.terms = {};
+    if (!siteSettings.terms.sections) siteSettings.terms.sections = [];
+    siteSettings.terms.sections.push({ title: '', content: '' });
+    renderTermsSectionsList();
+  }
+
+  function removeTermsSection(idx) {
+    siteSettings.terms.sections.splice(idx, 1);
+    renderTermsSectionsList();
+  }
+
+  function collectTerms() {
+    var sections = (siteSettings.terms && siteSettings.terms.sections) || [];
+    return {
+      alert: (document.getElementById('settings-terms-alert') || {}).value || '',
+      lastUpdated: (document.getElementById('settings-terms-date') || {}).value || '',
+      sections: sections.map(function(s, i) {
+        return {
+          title: (document.getElementById('terms-title-' + i) || {}).value || '',
+          content: (document.getElementById('terms-content-' + i) || {}).value || ''
+        };
+      }).filter(function(s) { return s.title; })
+    };
+  }
+
+  // ─── REVIEWS ───
+  function renderReviewsList() {
+    var reviews = siteSettings.reviews || [];
+    var list = document.getElementById('reviewsList');
+    var addBtn = document.getElementById('addReviewBtn');
+    if (!list) return;
+    list.innerHTML = reviews.map(function(r, i) {
+      return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1rem;position:relative;">' +
+        '<button onclick="removeReview(' + i + ')" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.9rem;">✕</button>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem;">' +
+          '<div class="form-group"><label>Текст на отзива *</label>' +
+          '<textarea id="rev-text-' + i + '" style="min-height:70px;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:DM Sans,sans-serif;font-size:0.82rem;border-radius:2px;outline:none;resize:vertical;width:100%;">' + (r.text || '') + '</textarea></div>' +
+          '<div style="display:flex;flex-direction:column;gap:0.6rem;">' +
+            '<div class="form-group"><label>Автор (Ime K., Град)</label>' +
+            '<input type="text" id="rev-author-' + i + '" value="' + (r.author || '') + '" placeholder="Мартин К., София" style="padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:DM Sans,sans-serif;font-size:0.82rem;border-radius:2px;outline:none;width:100%;" /></div>' +
+            '<div class="form-group"><label>Куриер (незадължително)</label>' +
+            '<select id="rev-courier-' + i + '" style="padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:DM Sans,sans-serif;font-size:0.82rem;border-radius:2px;outline:none;width:100%;appearance:none;">' +
+              '<option value="" ' + (!r.courier ? 'selected' : '') + '>Без куриер</option>' +
+              '<option value="Econt" ' + (r.courier === 'Econt' ? 'selected' : '') + '>Econt</option>' +
+              '<option value="Speedy" ' + (r.courier === 'Speedy' ? 'selected' : '') + '>Speedy</option>' +
+            '</select></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    if (addBtn) addBtn.style.display = reviews.length >= 6 ? 'none' : 'inline-block';
+  }
+
+  function addReview() {
+    if (!siteSettings.reviews) siteSettings.reviews = [];
+    if (siteSettings.reviews.length >= 6) return;
+    siteSettings.reviews.push({ text: '', author: '', courier: '' });
+    renderReviewsList();
+  }
+
+  function removeReview(idx) {
+    siteSettings.reviews.splice(idx, 1);
+    renderReviewsList();
+  }
+
+  function collectReviews() {
+    var reviews = siteSettings.reviews || [];
+    return reviews.map(function(r, i) {
+      return {
+        text: (document.getElementById('rev-text-' + i) || {}).value || '',
+        author: (document.getElementById('rev-author-' + i) || {}).value || '',
+        courier: (document.getElementById('rev-courier-' + i) || {}).value || ''
+      };
+    }).filter(function(r) { return r.text.trim(); });
+  }
+
+  // ─── THEMES ───
+  var THEMES = {
+  'noir-luxe': {fonts:'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#2a2a2a;--text:#f0ece4;--muted:#888;--accent:#c9a96e;--accent2:#e8d5b0;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#111111;border-bottom:1px solid #1e1e1e;} .nav-logo{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .nav-logo span{color:#c9a96e;} .hero-eyebrow{color:#c9a96e;} .hero h1{font-family:\'Cormorant Garamond\',serif;font-weight:300;color:#f0ece4;} .hero h1 em{color:#c9a96e;font-style:italic;} .hero-cta{background:#c9a96e;color:#000;border-radius:0;border:none;} .hero-cta:hover{background:#e8d5b0;} .section-title{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .cat-name{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .product-name{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .product-price{font-family:\'Cormorant Garamond\',serif;color:#c9a96e;} .footer-logo{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .footer-logo span{color:#c9a96e;} .page-header h1{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .add-to-cart{background:#c9a96e;color:#000;border-radius:0;} .hero-btn-outline{border-color:#c9a96e;color:#c9a96e;} '},
+  'blanc-eclat': {fonts:'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#fafaf8;--surface:#ffffff;--surface2:#f0ebe0;--border:#e8e4dd;--text:#1a1a1a;--muted:#888;--accent:#8b6914;--accent2:#c9a96e;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#fafaf8;border-bottom:1px solid #e8e4dd;} .nav-logo{font-family:\'Playfair Display\',serif;color:#1a1a1a;font-style:italic;} .nav-logo span{color:#8b6914;} .nav a{color:#1a1a1a;} .hero-eyebrow{color:#8b6914;} .hero h1{font-family:\'Playfair Display\',serif;font-weight:400;color:#1a1a1a;} .hero h1 em{color:#8b6914;font-style:italic;} .hero-cta{background:#1a1a1a;color:#fff;border-radius:0;border:1px solid #1a1a1a;} .hero-cta:hover{background:#333;} .section-title{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .cat-name{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .product-name{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .product-price{color:#8b6914;} .footer-logo{font-family:\'Playfair Display\',serif;color:#1a1a1a;font-style:italic;} .footer-logo span{color:#8b6914;} .page-header h1{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .add-to-cart{background:#1a1a1a;color:#fff;border-radius:0;} .cart-panel,.cart-backdrop{--surface:#ffffff;--text:#1a1a1a;} '},
+  'chrome-wave': {fonts:'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap',css:' :root{--bg:#0d0d14;--surface:#13131f;--surface2:#1a1a2e;--border:rgba(255,255,255,0.08);--text:#ffffff;--muted:rgba(255,255,255,0.4);--accent:#a78bfa;--accent2:#60a5fa;--danger:#f87171;--success:#34d399;} body{background:var(--bg);color:var(--text);font-family:\'Space Grotesk\',sans-serif;} nav{background:rgba(13,13,20,0.95);border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(10px);} .nav-logo{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:600;letter-spacing:-0.02em;} .nav-logo span{background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;} .nav a{color:rgba(255,255,255,0.7);} .hero-eyebrow{color:#a78bfa;font-family:\'Space Grotesk\',sans-serif;} .hero h1{font-family:\'Space Grotesk\',sans-serif;font-weight:700;color:#fff;letter-spacing:-0.03em;} .hero h1 em{background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-style:normal;} .hero-cta{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;border-radius:8px;border:none;font-family:\'Space Grotesk\',sans-serif;font-weight:600;} .section-title{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:700;letter-spacing:-0.03em;} .cat-name{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:600;} .product-name{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:500;} .product-price{color:#a78bfa;font-family:\'Space Grotesk\',sans-serif;} .footer-logo{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:700;} .footer-logo span{background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;} .page-header h1{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:700;} .add-to-cart{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;border-radius:8px;border:none;} .product-card{border-radius:8px;} .size-btn{border-radius:4px;} '},
+  'rose-atelier': {fonts:'https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap',css:' :root{--bg:#fdf6f0;--surface:#ffffff;--surface2:#fde8df;--border:#e8d5c8;--text:#2c1810;--muted:#886050;--accent:#c4614a;--accent2:#e8a090;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'Inter\',sans-serif;} nav{background:#fdf6f0;border-bottom:1px solid #e8d5c8;} .nav-logo{font-family:\'Libre Baskerville\',serif;color:#2c1810;font-style:italic;} .nav-logo span{color:#c4614a;font-style:normal;} .nav a{color:#2c1810;} .hero-eyebrow{color:#c4614a;font-family:\'Inter\',sans-serif;} .hero h1{font-family:\'Libre Baskerville\',serif;font-weight:400;color:#2c1810;} .hero h1 em{color:#c4614a;font-style:italic;} .hero-cta{background:#c4614a;color:#fff;border-radius:24px;border:none;font-family:\'Inter\',sans-serif;} .hero-cta:hover{background:#a84f3a;} .section-title{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .cat-name{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .product-name{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .product-price{color:#c4614a;} .footer-logo{font-family:\'Libre Baskerville\',serif;color:#2c1810;font-style:italic;} .footer-logo span{color:#c4614a;} .page-header h1{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .add-to-cart{background:#c4614a;color:#fff;border-radius:24px;border:none;} .product-card{border-radius:12px;} .size-btn{border-radius:12px;} '},
+  'concrete-edge': {fonts:'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap',css:' :root{--bg:#f2f0ed;--surface:#ffffff;--surface2:#e8e4dc;--border:#d0ccc4;--text:#1c1c1c;--muted:#666;--accent:#e8d44d;--accent2:#f0e060;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'Space Grotesk\',sans-serif;} nav{background:#1c1c1c;border-bottom:none;} .nav-logo{font-family:\'Space Grotesk\',sans-serif;color:#f2f0ed;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;} .nav-logo span{color:#e8d44d;-webkit-text-fill-color:#e8d44d;} .nav a,.nav-links a{color:rgba(255,255,255,0.7);} .cart-btn{color:#f2f0ed;border-color:rgba(255,255,255,0.2);} .hero-eyebrow{color:#e8d44d;font-family:\'Space Grotesk\',sans-serif;font-weight:600;} .hero h1{font-family:\'Space Grotesk\',sans-serif;font-weight:700;color:#1c1c1c;letter-spacing:-0.04em;} .hero h1 em{color:#e8d44d;font-style:normal;} .hero-cta{background:#e8d44d;color:#1c1c1c;border-radius:0;border:none;font-family:\'Space Grotesk\',sans-serif;font-weight:700;} .hero-cta:hover{background:#f0e060;} .section-title{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:700;letter-spacing:-0.03em;} .cat-name{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:700;text-transform:uppercase;} .product-name{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:600;text-transform:uppercase;letter-spacing:-0.01em;} .product-price{color:#1c1c1c;font-family:\'Space Grotesk\',sans-serif;font-weight:700;} .footer-logo{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:800;text-transform:uppercase;} .footer-logo span{color:#e8d44d;-webkit-text-fill-color:#e8d44d;} .page-header h1{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:700;} .add-to-cart{background:#1c1c1c;color:#f2f0ed;border-radius:0;border:none;} .product-card{border-left:3px solid #e8d44d;border-radius:0;} '},
+  'ink-editorial': {fonts:'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#f7f5f0;--surface:#ffffff;--surface2:#e8e4dc;--border:#d8d4cc;--text:#111111;--muted:#888;--accent:#111111;--accent2:#333;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#f7f5f0;border-bottom:3px solid #111;} .nav-logo{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;} .nav-logo span{-webkit-text-stroke:1.5px #111;color:transparent;-webkit-text-fill-color:transparent;} .nav a{color:#111;} .hero-eyebrow{color:#888;font-family:\'Syne\',sans-serif;font-weight:600;} .hero h1{font-family:\'Syne\',sans-serif;font-weight:800;color:#111;text-transform:uppercase;letter-spacing:-0.04em;} .hero h1 em{-webkit-text-stroke:1.5px #111;color:transparent;-webkit-text-fill-color:transparent;font-style:normal;} .hero-cta{background:#111;color:#f7f5f0;border-radius:0;font-family:\'Syne\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;} .hero-cta:hover{background:#333;} .section-title{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;letter-spacing:-0.02em;} .cat-name{font-family:\'Syne\',sans-serif;color:#111;font-weight:700;text-transform:uppercase;} .product-name{font-family:\'Syne\',sans-serif;color:#111;font-weight:700;text-transform:uppercase;} .product-price{color:#111;font-family:\'DM Sans\',sans-serif;} .footer-logo{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;} .footer-logo span{color:#111;-webkit-text-fill-color:#111;} .page-header h1{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;} .add-to-cart{background:#111;color:#f7f5f0;border-radius:0;font-family:\'Syne\',sans-serif;font-weight:700;} .product-card{border:1px solid #d8d4cc;border-radius:0;} '},
+  'solar-flare': {fonts:'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap',css:' :root{--bg:#fff8f0;--surface:#ffffff;--surface2:#fff0e8;--border:#e8d0b8;--text:#111111;--muted:#666;--accent:#ff4d00;--accent2:#ff7733;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'Montserrat\',sans-serif;} nav{background:#ff4d00;border-bottom:none;} .nav-logo{font-family:\'Montserrat\',sans-serif;color:#fff;font-weight:900;letter-spacing:0.06em;text-transform:uppercase;} .nav-logo span{color:#fff;-webkit-text-fill-color:#fff;} .nav a,.nav-links a,.cart-btn{color:rgba(255,255,255,0.9);} .cart-btn{border-color:rgba(255,255,255,0.3);} .hero-eyebrow{color:#ff4d00;font-family:\'Montserrat\',sans-serif;font-weight:700;} .hero h1{font-family:\'Montserrat\',sans-serif;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:-0.02em;} .hero h1 em{color:#ff4d00;font-style:normal;} .hero{background:#111!important;} .hero-cta{background:#ff4d00;color:#fff;border-radius:0;font-family:\'Montserrat\',sans-serif;font-weight:700;text-transform:uppercase;} .hero-cta:hover{background:#cc3d00;} .section-title{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;} .cat-name{font-family:\'Montserrat\',sans-serif;color:#f0ece4;font-weight:700;text-transform:uppercase;} .product-name{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:700;text-transform:uppercase;} .product-price{color:#ff4d00;font-family:\'Montserrat\',sans-serif;font-weight:600;} .footer-logo{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:900;text-transform:uppercase;} .footer-logo span{color:#ff4d00;-webkit-text-fill-color:#ff4d00;} .page-header h1{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:900;text-transform:uppercase;} .add-to-cart{background:#ff4d00;color:#fff;border-radius:0;font-weight:700;} .product-card{border-top:3px solid #ff4d00;box-shadow:4px 4px 0 #111;border-radius:0;} '},
+  'pearl-minimal': {fonts:'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#ffffff;--surface:#ffffff;--surface2:#f8f8f8;--border:#e0e0e0;--text:#1a1a1a;--muted:#aaa;--accent:#1a1a1a;--accent2:#444;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#fff;border-bottom:1px solid #e0e0e0;} .nav-logo{font-family:\'Fraunces\',serif;color:#1a1a1a;font-style:italic;font-weight:300;} .nav-logo span{color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;} .nav a{color:#1a1a1a;} .hero-eyebrow{color:#aaa;letter-spacing:0.3em;} .hero h1{font-family:\'Fraunces\',serif;font-weight:300;color:#1a1a1a;font-style:italic;} .hero h1 em{color:#1a1a1a;font-style:italic;} .hero-cta{background:transparent;color:#1a1a1a;border:1px solid #1a1a1a;border-radius:0;font-family:\'DM Sans\',sans-serif;letter-spacing:0.15em;} .hero-cta:hover{background:#1a1a1a;color:#fff;} .section-title{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .cat-name{font-family:\'Fraunces\',serif;color:#f0ece4;font-weight:300;font-style:italic;} .product-name{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .product-price{color:#888;font-family:\'DM Sans\',sans-serif;} .footer-logo{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .footer-logo span{color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;} .page-header h1{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .add-to-cart{background:#1a1a1a;color:#fff;border-radius:0;} .product-card{box-shadow:none;border:none;border-bottom:1px solid #e0e0e0;border-radius:0;} '},
+  'voltage': {fonts:'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600&display=swap',css:' :root{--bg:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#222222;--text:#ffffff;--muted:#444;--accent:#00ff88;--accent2:#00ccff;--danger:#f87171;--success:#00ff88;} body{background:var(--bg);color:var(--text);font-family:\'Space Grotesk\',sans-serif;} nav{background:#0a0a0a;border-bottom:1px solid #1a1a1a;} .nav-logo{font-family:\'Bebas Neue\',sans-serif;color:#fff;font-weight:400;letter-spacing:0.1em;font-size:1.4rem !important;} .nav-logo span{color:#00ff88;-webkit-text-fill-color:#00ff88;} .nav a{color:#fff;} .hero-eyebrow{color:#00ff88;font-family:\'Space Grotesk\',sans-serif;font-weight:500;letter-spacing:0.2em;} .hero h1{font-family:\'Bebas Neue\',sans-serif;font-weight:400;color:#fff;letter-spacing:0.05em;font-size:clamp(3rem,8vw,6rem) !important;} .hero h1 em{color:#00ff88;font-style:normal;} .hero-cta{background:transparent;color:#00ff88;border:1px solid #00ff88;border-radius:0;font-family:\'Space Grotesk\',sans-serif;font-weight:500;letter-spacing:0.1em;} .hero-cta:hover{background:#00ff88;color:#0a0a0a;} .section-title{font-family:\'Bebas Neue\',sans-serif;color:#fff;font-weight:400;letter-spacing:0.05em;} .cat-name{font-family:\'Bebas Neue\',sans-serif;color:#fff;font-weight:400;letter-spacing:0.05em;} .product-name{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:600;} .product-price{color:#00ff88;font-family:\'Space Grotesk\',sans-serif;font-weight:600;} .footer-logo{font-family:\'Bebas Neue\',sans-serif;color:#fff;letter-spacing:0.08em;font-size:1.2rem;} .footer-logo span{color:#00ff88;-webkit-text-fill-color:#00ff88;} .page-header h1{font-family:\'Bebas Neue\',sans-serif;color:#fff;letter-spacing:0.05em;} .add-to-cart{background:#00ff88;color:#0a0a0a;border-radius:0;font-family:\'Space Grotesk\',sans-serif;font-weight:700;} .add-to-cart:hover{background:#00ccff;} .product-card::before{content:\'\';display:block;height:2px;background:linear-gradient(90deg,#00ff88,#00ccff);} .product-card{border-radius:0;} '},
+  'sand-dune': {fonts:'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#f0ead8;--surface:#ffffff;--surface2:#e8dcc8;--border:#d4c4a0;--text:#3d2e1e;--muted:#7a6040;--accent:#c9a96e;--accent2:#e8d4a0;--danger:#e05252;--success:#52c07a;} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#f0ead8;border-bottom:2px solid #3d2e1e;} .nav-logo{font-family:\'Fraunces\',serif;color:#3d2e1e;font-style:italic;font-weight:400;} .nav-logo span{color:#c9a96e;-webkit-text-fill-color:#c9a96e;} .nav a{color:#3d2e1e;} .hero-eyebrow{color:#c9a96e;font-family:\'DM Sans\',sans-serif;} .hero h1{font-family:\'Fraunces\',serif;font-weight:400;color:#f0ead8;font-style:italic;} .hero h1 em{color:#c9a96e;font-style:italic;} .hero{background:#3d2e1e !important;} .hero-cta{background:#c9a96e;color:#3d2e1e;border-radius:4px;border:none;font-family:\'DM Sans\',sans-serif;font-weight:500;} .hero-cta:hover{background:#e8d4a0;} .section-title{font-family:\'Fraunces\',serif;color:#3d2e1e;font-weight:400;font-style:italic;} .cat-name{font-family:\'Fraunces\',serif;color:#f0ead8;font-weight:400;font-style:italic;} .product-name{font-family:\'Fraunces\',serif;color:#3d2e1e;font-weight:400;font-style:italic;} .product-price{color:#c9a96e;} .footer-logo{font-family:\'Fraunces\',serif;color:#3d2e1e;font-style:italic;} .footer-logo span{color:#c9a96e;-webkit-text-fill-color:#c9a96e;} .page-header h1{font-family:\'Fraunces\',serif;color:#3d2e1e;font-style:italic;} .add-to-cart{background:#3d2e1e;color:#f0ead8;border-radius:4px;} .product-card{border-radius:4px;box-shadow:0 4px 20px rgba(61,46,30,0.1);} '}
+};
+
+  var THEME_META = {
+    'noir-luxe':     {name:'Noir Luxe',      accent:'#c9a96e', bg:'#0a0a0a'},
+    'blanc-eclat':   {name:'Blanc Éclat',     accent:'#8b6914', bg:'#fafaf8'},
+    'chrome-wave':   {name:'Chrome Wave',     accent:'#a78bfa', bg:'#0d0d14'},
+    'rose-atelier':  {name:'Rosé Atelier',    accent:'#c4614a', bg:'#fdf6f0'},
+    'concrete-edge': {name:'Concrete Edge',   accent:'#e8d44d', bg:'#1c1c1c'},
+    'ink-editorial': {name:'Ink Editorial',   accent:'#111111', bg:'#f7f5f0'},
+    'solar-flare':   {name:'Solar Flare',     accent:'#ff4d00', bg:'#fff8f0'},
+    'pearl-minimal': {name:'Pearl Minimal',   accent:'#1a1a1a', bg:'#ffffff'},
+    'voltage':       {name:'Voltage',         accent:'#00ff88', bg:'#0a0a0a'},
+    'sand-dune':     {name:'Sand Dune',       accent:'#c9a96e', bg:'#f0ead8'}
+  };
+
+  function renderThemeGrid() {
+    var current = siteSettings.theme || 'noir-luxe';
+    var grid = document.getElementById('themeGrid');
+    if (!grid) return;
+    grid.innerHTML = Object.keys(THEME_META).map(function(id) {
+      var t = THEME_META[id];
+      var isActive = id === current;
+      return '<div onclick="selectTheme(\'' + id + '\')" style="cursor:pointer;border-radius:4px;overflow:hidden;border:2px solid ' + (isActive ? 'var(--accent)' : 'transparent') + ';transition:border-color 0.2s;">' +
+        '<div style="height:50px;background:' + t.bg + ';display:flex;align-items:center;justify-content:center;gap:6px;">' +
+          '<div style="width:16px;height:16px;border-radius:50%;background:' + t.accent + ';"></div>' +
+          '<div style="width:24px;height:6px;border-radius:2px;background:' + t.accent + ';opacity:0.4;"></div>' +
+        '</div>' +
+        '<div style="padding:6px 8px;background:var(--surface2);font-size:0.62rem;letter-spacing:0.06em;color:' + (isActive ? 'var(--accent)' : 'var(--muted)') + ';text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + t.name + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function selectTheme(id) {
+    siteSettings.theme = id;
+    renderThemeGrid();
+    toast('Тема "' + THEME_META[id].name + '" избрана — натисни Запази', 'success');
+  }
+
+  // ─── EMOJI PICKER ───
+  var EMOJIS = [
+    '👕','👗','👔','🧥','🧣','🧤','🧢','👟','👠','👜',
+    '👒','🕶️','💍','⌚','📱','🎧','🔊','💻','🖥️','⌨️',
+    '🎮','📷','📸','🎒','🧳','💄','💅','🪞','🛍️','🏋️',
+    '⚽','🏀','🎾','🏊','🚴','🧘','🏃','🤸','⛹️','🥊',
+    '🎵','🎸','🎹','🎺','🥁','🎻','🎤','🎬','🎯','🎲',
+    '🌸','🌿','🍃','🌙','⭐','🔥','💎','👑','🦋','🐉'
+  ];
+
+  function toggleEmojiPicker() {
+    var picker = document.getElementById('emojiPicker');
+    if (picker.style.display === 'none') {
+      var grid = document.getElementById('emojiGrid');
+      if (!grid.children.length) {
+        grid.innerHTML = EMOJIS.map(function(e) {
+          return '<span class="emoji-opt" onclick="selectEmoji(\'' + e + '\')" title="' + e + '">' + e + '</span>';
+        }).join('');
+      }
+      picker.style.display = 'block';
+    } else {
+      picker.style.display = 'none';
+    }
+  }
+
+  function selectEmoji(e) {
+    document.getElementById('newcat-emoji').value = e;
+    document.getElementById('emojiPicker').style.display = 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    var picker = document.getElementById('emojiPicker');
+    var input = document.getElementById('newcat-emoji');
+    if (picker && !picker.contains(e.target) && e.target !== input) {
+      picker.style.display = 'none';
+    }
+  });
+
+  // ─── CUSTOM CATEGORIES ───
+  function renderCustomCatList() {
+    var cats = siteSettings.customCategories || [];
+    var list = document.getElementById('customCatList');
+    if (!list) return;
+    if (!cats.length) {
+      list.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);">Няма добавени категории.</p>';
+      return;
+    }
+    list.innerHTML = cats.map(function(c, i) {
+      return '<div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:2px;margin-bottom:4px;">' +
+        '<span style="font-size:1.3rem;">' + c.emoji + '</span>' +
+        '<span style="flex:1;font-size:0.88rem;">' + c.name + '</span>' +
+        '<span style="font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;">ID: ' + c.id + '</span>' +
+        '<button onclick="removeCustomCategory(' + i + ')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.9rem;padding:2px 6px;">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function addCustomCategory() {
+    var emoji = document.getElementById('newcat-emoji').value.trim();
+    var name = document.getElementById('newcat-name').value.trim();
+    if (!emoji || !name) { toast('Избери емоджи и въведи име', 'error'); return; }
+    if (!siteSettings.customCategories) siteSettings.customCategories = [];
+    var id = 'cat_' + name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') + '_' + Date.now().toString().slice(-4);
+    siteSettings.customCategories.push({ id: id, emoji: emoji, name: name, active: false });
+    document.getElementById('newcat-emoji').value = '';
+    document.getElementById('newcat-name').value = '';
+    renderCustomCatList();
+    renderCustomCatToggles();
+    updateCategoryDropdowns();
+    createImageFolder(id, id);
+    toast('Категорията е добавена! Запази настройките.', 'success');
+  }
+
+  function removeCustomCategory(idx) {
+    if (!confirm('Изтрий категорията?')) return;
+    siteSettings.customCategories.splice(idx, 1);
+    renderCustomCatList();
+    updateCategoryDropdowns();
+  }
+
+  function updateCategoryDropdowns() {
+    var cats = siteSettings.customCategories || [];
+    var selects = ['np-cat', 'edit-cat'];
+    selects.forEach(function(id) {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      var builtin = ['<option value="">Избери</option>',
+        '<option value="clothes">👕 Дрехи</option>',
+        '<option value="bracelets">⌚ Смарт гривни</option>',
+        '<option value="speakers">🔊 Тонколонки</option>'];
+      var custom = cats.map(function(c) {
+        return '<option value="' + c.id + '">' + c.emoji + ' ' + c.name + '</option>';
+      });
+      sel.innerHTML = builtin.concat(custom).join('');
+    });
+  }
+
+  // ─── SETTINGS ───
+  var siteSettings = {
+    siteName: 'The Forbidden Style',
+    contactMode: 'phone',
+    phone: '0876 127 997',
+    hours: 'Всеки ден'
+  };
+
+  function loadSettings(data) {
+    siteSettings = Object.assign({ siteName: 'The Forbidden Style', contactMode: 'phone', phone: '0876 127 997', hours: 'Всеки ден', showCategories: true, customCategories: [], reviews: [] }, data.settings || {});
+  }
+
+  function toggleSettingToggle(key) {
+    siteSettings[key] = siteSettings[key] === false ? true : false;
+    var tog = document.getElementById('toggle-' + key);
+    var lbl = document.getElementById('label-' + key);
+    var isOn = siteSettings[key] !== false;
+    if (tog) tog.classList.toggle('on', isOn);
+    if (lbl) {
+      lbl.classList.toggle('on', isOn);
+      var labels = { showCategories: ['Показани','Скрити'], showTerms: ['Показани','Скрити'] };
+      lbl.textContent = isOn ? (labels[key] ? labels[key][0] : 'Включено') : (labels[key] ? labels[key][1] : 'Изключено');
+    }
+    saveSettings();
+  }
+
+  function renderSettingsUI() {
+    var nameEl = document.getElementById('settings-sitename');
+    var phoneEl = document.getElementById('settings-phone');
+    var hoursEl = document.getElementById('settings-hours');
+    var subtitleEl = document.getElementById('settings-products-subtitle');
+    var heroEl = document.getElementById('settings-hero');
+    var eyebrowEl = document.getElementById('settings-eyebrow');
+    if (nameEl) { nameEl.value = siteSettings.siteName || ''; nameEl.placeholder = siteSettings.siteName || 'The Forbidden Style'; }
+    if (phoneEl) { phoneEl.value = siteSettings.phone || ''; phoneEl.placeholder = siteSettings.phone || '0876 127 997'; }
+    if (hoursEl) { hoursEl.value = siteSettings.hours || ''; hoursEl.placeholder = siteSettings.hours || 'Всеки ден'; }
+    if (subtitleEl) { subtitleEl.value = siteSettings.productsSubtitle || ''; subtitleEl.placeholder = siteSettings.productsSubtitle || 'The Forbidden Style — Collection'; }
+    if (heroEl) { heroEl.value = siteSettings.hero || ''; heroEl.placeholder = siteSettings.hero || 'Живей с Аура'; }
+    if (eyebrowEl) { eyebrowEl.value = siteSettings.eyebrow || ''; eyebrowEl.placeholder = siteSettings.eyebrow || 'Нова колекция 2026'; }
+    var mode = siteSettings.contactMode || 'phone';
+    var radioPhone = document.getElementById('contact-phone');
+    var radioEmail = document.getElementById('contact-email');
+    if (radioPhone) radioPhone.checked = mode === 'phone';
+    if (radioEmail) radioEmail.checked = mode === 'email';
+    updateContactFields();
+    var showCat = siteSettings.showCategories !== false;
+    var tog = document.getElementById('toggle-showCategories');
+    var lbl = document.getElementById('label-showCategories');
+    if (tog) tog.classList.toggle('on', showCat);
+    if (lbl) { lbl.classList.toggle('on', showCat); lbl.textContent = showCat ? 'Показани' : 'Скрити'; }
+    var repoEl = document.getElementById('settings-repo');
+    if (repoEl) { repoEl.value = GITHUB_REPO; repoEl.placeholder = GITHUB_REPO; }
+    if (scriptEl) {
+      if (siteSettings.scriptUrlEncoded) {
+        scriptEl.placeholder = '(запазен — постави нов за да смениш)';
+        scriptEl.value = '';
+        document.getElementById('scripturl-status').textContent = '✓ URL е запазен и кодиран';
+        document.getElementById('scripturl-status').style.color = 'var(--success)';
+      }
+    }
+    renderCustomCatList();
+    updateCategoryDropdowns();
+    renderThemeGrid();
+    renderReviewsList();
+    var showTerms = siteSettings.showTerms === true;
+    var togTerms = document.getElementById('toggle-showTerms');
+    var lblTerms = document.getElementById('label-showTerms');
+    if (togTerms) togTerms.classList.toggle('on', showTerms);
+    if (lblTerms) { lblTerms.classList.toggle('on', showTerms); lblTerms.textContent = showTerms ? 'Показани' : 'Скрити'; }
+    var alertEl = document.getElementById('settings-terms-alert');
+    var dateEl = document.getElementById('settings-terms-date');
+    if (alertEl) alertEl.value = (siteSettings.terms && siteSettings.terms.alert) || '';
+    if (dateEl) dateEl.value = (siteSettings.terms && siteSettings.terms.lastUpdated) || '';
+    renderTermsSectionsList();
+  }
+
+  function updateContactFields() {
+    var mode = document.querySelector('input[name="contactMode"]:checked');
+    var phoneFields = document.getElementById('settings-phone-fields');
+    var emailFields = document.getElementById('settings-email-fields');
+    if (!phoneFields) return;
+    var isPhone = !mode || mode.value === 'phone';
+    phoneFields.style.display = isPhone ? 'block' : 'none';
+    emailFields.style.display = isPhone ? 'none' : 'block';
+  }
+
+  document.addEventListener('change', function(e) {
+    if (e.target.name === 'contactMode') updateContactFields();
+  });
+
+  async function saveSettings() {
+    var mode = document.querySelector('input[name="contactMode"]:checked');
+    siteSettings = {
+      siteName: document.getElementById('settings-sitename').value.trim() || 'The Forbidden Style',
+      contactMode: mode ? mode.value : 'phone',
+      phone: document.getElementById('settings-phone').value.trim() || '0876 127 997',
+      hours: document.getElementById('settings-hours').value.trim() || 'Всеки ден',
+      eyebrow: document.getElementById('settings-eyebrow').value.trim() || 'Нова колекция 2026',
+      hero: document.getElementById('settings-hero').value.trim() || 'Живей с Аура',
+      productsSubtitle: document.getElementById('settings-products-subtitle').value.trim(),
+      reviews: collectReviews(),
+      terms: collectTerms(),
+      showTerms: siteSettings.showTerms === true,
+      showCategories: siteSettings.showCategories !== false,
+      customCategories: siteSettings.customCategories || [],
+      theme: siteSettings.theme || 'noir-luxe',
+      scriptUrlEncoded: (function() {
+        var newUrl = document.getElementById('settings-scripturl').value.trim();
+        if (newUrl && newUrl.startsWith('https://script.google.com')) {
+          return btoa(newUrl);
+        }
+        return siteSettings.scriptUrlEncoded || '';
+      })()
+    };
+    var currentData = { products: products, urgency: urgencyData, settings: siteSettings };
+    setSaving(true);
+    try {
+      var getRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      var getData = await getRes.json();
+      fileSha = getData.sha;
+      var content = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+      var res = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + PRODUCTS_FILE, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Update site settings', content: content, sha: fileSha })
+      });
+      var d = await res.json();
+      if (d.content) fileSha = d.content.sha;
+      toast('Настройките са запазени!', 'success');
+    } catch(e) {
+      toast('Грешка при запис', 'error');
+    }
+    setSaving(false);
+  }
+
+  // ─── SCAN IMAGES ───
+  var SITE_URL = 'https://BSrank.github.io/frbstyle';
+
+  async function scanImages(idx) {
+    var p = products[idx];
+    var btn = document.getElementById('scan-' + p.id);
+    btn.textContent = '⏳ Сканира...';
+    btn.classList.add('scanning');
+    btn.disabled = true;
+
+    var exts = ['jpg', 'jpeg', 'png', 'webp'];
+    var found = [];
+    var emptyInARow = 0;
+
+    for (var i = 1; i <= 50; i++) {
+      var foundThis = false;
+      for (var e = 0; e < exts.length; e++) {
+        var relativePath = 'images/' + p.category + '/' + p.id + '/' + i + '.' + exts[e];
+        var fullUrl = SITE_URL + '/' + relativePath;
+        try {
+          var res = await fetch(fullUrl, { method: 'HEAD' });
+          if (res.ok) { found.push(relativePath); foundThis = true; break; }
+        } catch(err) {}
+      }
+      if (foundThis) { emptyInARow = 0; }
+      else { emptyInARow++; if (emptyInARow >= 100) break; }
+    }
+
+    products[idx].images = found;
+    var ok = await saveProductsToGitHub(products);
+
+    btn.classList.remove('scanning');
+    btn.disabled = false;
+
+    if (ok) {
+      btn.textContent = '📷 ' + found.length + ' сн.';
+      toast(found.length > 0 ? 'Намерени ' + found.length + ' снимки!' : 'Няма снимки в папката', found.length > 0 ? 'success' : 'error');
+    } else {
+      btn.textContent = '📷 Сканирай';
+      toast('Грешка при запис', 'error');
+    }
+  }
+
+  // ─── EDIT PRODUCT ───
+  function openEdit(idx) {
+    var p = products[idx];
+    document.getElementById('edit-idx').value = idx;
+    document.getElementById('edit-name').value = p.name || '';
+    document.getElementById('edit-desc').value = p.desc || '';
+    document.getElementById('edit-price').value = p.price || '';
+    document.getElementById('edit-cat').value = p.category || 'clothes';
+    var isFormatted = p.descFormatted === true;
+    var tog = document.getElementById('edit-format-toggle');
+    var lbl = document.getElementById('edit-format-label');
+    var hint = document.getElementById('edit-format-hint');
+    tog.classList.toggle('on', isFormatted);
+    lbl.classList.toggle('on', isFormatted);
+    lbl.textContent = isFormatted ? 'Форматиран текст' : 'Обикновен текст';
+    hint.style.display = isFormatted ? 'block' : 'none';
+    document.getElementById('edit-desc').style.minHeight = isFormatted ? '220px' : '120px';
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeEdit() {
+    document.getElementById('editModal').classList.remove('open');
+  }
+
+  async function saveEdit() {
+    var idx = parseInt(document.getElementById('edit-idx').value);
+    var name  = document.getElementById('edit-name').value.trim();
+    var desc  = document.getElementById('edit-desc').value.trim();
+    var price = parseFloat(document.getElementById('edit-price').value);
+    var cat   = document.getElementById('edit-cat').value;
+    if (!name || !price) { toast('Попълни задължителните полета', 'error'); return; }
+
+    products[idx].name  = name;
+    products[idx].desc  = desc;
+    products[idx].price = price;
+    products[idx].category = cat;
+    products[idx].descFormatted = document.getElementById('edit-format-toggle').classList.contains('on');
+
+    var ok = await saveProductsToGitHub(products);
+    if (ok) {
+      toast('Продуктът е обновен!', 'success');
+      closeEdit();
+      renderInventory();
+      updateStats();
+      syncCategoryToggles();
+    } else {
+      toast('Грешка при запис', 'error');
+    }
+  }
+
+  // ─── FORMAT DESC TOGGLE ───
+  function toggleFormatDesc(prefix) {
+    var tog = document.getElementById(prefix + '-format-toggle');
+    var lbl = document.getElementById(prefix + '-format-label');
+    var hint = document.getElementById(prefix + '-format-hint');
+    var textarea = document.getElementById(prefix + '-desc');
+    var isOn = tog.classList.toggle('on');
+    lbl.classList.toggle('on', isOn);
+    lbl.textContent = isOn ? 'Форматиран текст' : 'Обикновен текст';
+    hint.style.display = isOn ? 'block' : 'none';
+    textarea.style.minHeight = isOn ? '180px' : '80px';
+    if (prefix === 'edit') textarea.style.minHeight = isOn ? '220px' : '120px';
+  }
+
+  // ─── ORDERS (от Google Script) ───
+  var ordersLoaded = false;
+  function loadOrders() {
+    if (ordersLoaded) return;
+    document.getElementById('ordersLoading').style.display = 'block';
+    fetch(SCRIPT_URL + '?action=getOrders')
+      .then(function(r) { return r.json(); })
+      .then(function(data) { renderOrders(data.orders || []); ordersLoaded = true; })
+      .catch(function() { renderOrders([]); ordersLoaded = true; });
+  }
+
+  function renderOrders(orders) {
+    document.getElementById('ordersLoading').style.display = 'none';
+    document.getElementById('ordersTable').style.display = 'block';
+    var body = document.getElementById('ordersBody');
+    if (!orders.length) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Няма поръчки</td></tr>';
+      return;
+    }
+    body.innerHTML = orders.slice().reverse().map(function(o) {
+      var d = o.date ? new Date(o.date).toLocaleString('bg-BG') : '—';
+      var items = (o.items||[]).map(function(i) { return i.name + (i.size?' ('+i.size+')':'') + ' ×' + i.qty; }).join(', ');
+      return '<tr><td>' + d + '</td><td>' + (o.name||'—') + '</td><td>' + (o.phone||'—') + '</td>' +
+        '<td>' + (o.courier||'—') + '<br><small style="color:var(--muted)">' + (o.city||'') + ' · ' + (o.office||'') + '</small></td>' +
+        '<td><div class="order-items-list">' + items + '</div></td>' +
+        '<td style="color:var(--accent)">лв ' + (o.total||'—') + '</td></tr>';
+    }).join('');
+  }
+
+  // ─── TOAST ───
+  function toast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (type||'success');
+    setTimeout(function() { t.className = 'toast'; }, 2500);
+  }
+
+  // ─── INIT ───
+  if (sessionStorage.getItem('zax_session')) loadData();
+</script>
+</body>
+</html>

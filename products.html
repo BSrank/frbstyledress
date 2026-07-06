@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Продукти — The Forbidden Style</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a; --surface: #111111; --surface2: #1a1a1a;
+      --border: #2a2a2a; --text: #f0ece4; --muted: #888;
+      --accent: #c9a96e; --accent2: #e8d5b0;
+      --danger: #e05252; --success: #52c07a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+
+    
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 5%;
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; color: var(--text); text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    .cart-btn {
+      background: none; border: 1px solid var(--border); color: var(--text);
+      padding: 8px 18px; border-radius: 2px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px; transition: border-color 0.2s, color 0.2s;
+    }
+    .cart-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .cart-count { background: var(--accent); color: var(--btn-text, #000); border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--text); }
+
+    
+    .page-header {
+      padding: 60px 5% 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header p { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 300; }
+
+    
+    .filter-bar {
+      display: flex; gap: 0.5rem; padding: 1.5rem 5%;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; align-items: center;
+    }
+    .filter-btn {
+      padding: 8px 18px; border: 1px solid var(--border);
+      background: none; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; border-radius: 2px; transition: all 0.2s;
+    }
+    .filter-btn:hover { color: var(--text); border-color: var(--muted); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--btn-text, #000); }
+    .filter-count { margin-left: auto; font-size: 0.78rem; color: var(--muted); }
+
+    
+    .loading-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 80px 5%; gap: 1.5rem;
+      color: var(--muted);
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    
+    .products-section { padding: 2.5rem 5% 5rem; }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.5px;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: border-color 0.3s;
+      display: flex; flex-direction: column;
+    }
+    .product-card:hover { border-color: #444; }
+    .product-img {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; position: relative;
+      overflow: hidden;
+    }
+    .product-img.clothes-bg { background: linear-gradient(135deg, #1a1510, #2d2418); }
+    .product-img.bracelets-bg { background: linear-gradient(135deg, #0f1a1a, #182828); }
+    .product-img.speakers-bg { background: linear-gradient(135deg, #111218, #1c1d2a); }
+    .img-fallback-emoji {
+      position: relative; z-index: 1;
+      pointer-events: none;
+    }
+    .product-photo {
+      width: 100%; height: 100%; object-fit: contain;
+      position: absolute; inset: 0; z-index: 2;
+      opacity: 0; transition: opacity 0.3s;
+      padding: 8px;
+    }
+    .product-img:hover .product-photo { cursor: zoom-in; }
+    .zoom-hint {
+      position: absolute; top: 10px; left: 10px; z-index: 3;
+      background: rgba(0,0,0,0.55); border-radius: 50%;
+      width: 28px; height: 28px;
+      display: none; align-items: center; justify-content: center;
+      font-size: 0.85rem; pointer-events: none;
+    }
+    .product-img:hover .zoom-hint { display: flex; }
+    .img-nav {
+      position: absolute; bottom: 10px; left: 0; right: 0; z-index: 3;
+      align-items: center; justify-content: center; gap: 10px;
+      padding: 0 10px;
+    }
+    .img-nav-btn {
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; width: 26px; height: 26px; border-radius: 50%;
+      cursor: pointer; font-size: 1rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .img-nav-btn:hover { background: rgba(0,0,0,0.75); }
+    .img-dots { display: flex; gap: 5px; }
+    .img-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      transition: background 0.2s;
+    }
+    .img-dot.active { background: var(--accent); }
+    .stock-badge {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 2px;
+    }
+    .stock-badge.low { background: rgba(224,82,82,0.15); color: var(--danger); border: 1px solid rgba(224,82,82,0.3); }
+    .stock-badge.out { background: rgba(100,100,100,0.15); color: var(--muted); border: 1px solid var(--border); }
+    .product-body { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
+    .product-cat { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
+    .product-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; margin-bottom: 0.3rem; line-height: 1.2; }
+    .product-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; flex: 1; }
+    .desc-header { font-size: 0.78rem; font-weight: 600; color: var(--text); margin: 0.8rem 0 0.3rem; }
+    .desc-header:first-child { margin-top: 0; }
+    .desc-item { display: flex; gap: 0.5rem; font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 0.2rem; }
+    .desc-item::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+    .desc-gap { height: 0.4rem; }
+    .product-price { font-size: 1.1rem; color: var(--accent); font-family: 'Cormorant Garamond', serif; margin-bottom: 1rem; }
+
+    
+    .size-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .size-options { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .size-btn {
+      padding: 5px 12px; border: 1px solid var(--border);
+      background: none; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+      cursor: pointer; border-radius: 2px; transition: all 0.15s;
+      position: relative;
+    }
+    .size-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .size-btn.selected { background: var(--accent); border-color: var(--accent); color: var(--btn-text, #000); }
+    .size-btn:disabled {
+      opacity: 0.35; cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    .size-stock { font-size: 0.6rem; display: block; color: var(--muted); }
+
+    
+    .size-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .size-options { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .size-btn {
+      padding: 5px 11px; border: 1px solid var(--border);
+      background: none; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+      cursor: pointer; border-radius: 2px; transition: all 0.15s;
+      position: relative;
+    }
+    .size-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .size-btn.selected { background: var(--accent); border-color: var(--accent); color: var(--btn-text, #000); }
+    .size-btn:disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
+    .size-out-label { font-size: 0.58rem; display: block; color: var(--danger); }
+
+    /* LIGHTBOX */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.97);
+      align-items: center; justify-content: center;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-inner {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      max-width: 92vw; max-height: 92vh;
+    }
+    .lightbox-img {
+      max-width: 88vw; max-height: 88vh;
+      object-fit: contain; border-radius: 3px;
+      display: block;
+    }
+    .lightbox-close {
+      position: absolute; top: -40px; right: 0;
+      background: none; border: none; color: rgba(255,255,255,0.7);
+      font-size: 1.6rem; cursor: pointer; line-height: 1;
+      transition: color 0.2s; padding: 4px 8px;
+    }
+    .lightbox-close:hover { color: #fff; }
+    .lightbox-nav-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; width: 40px; height: 40px; border-radius: 50%;
+      cursor: pointer; font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; z-index: 2;
+    }
+    .lightbox-nav-btn:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-nav-btn.prev { left: -52px; }
+    .lightbox-nav-btn.next { right: -52px; }
+    .lightbox-counter {
+      position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.4); font-size: 0.78rem; letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) {
+      .lightbox-nav-btn.prev { left: -44px; }
+      .lightbox-nav-btn.next { right: -44px; }
+      .lightbox-img { max-width: 82vw; max-height: 80vh; }
+    }
+
+    .add-btn {
+      width: 100%; padding: 11px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border-radius: 2px; transition: all 0.2s; margin-top: auto;
+    }
+    .add-btn:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--btn-text, #000); }
+    .add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .add-btn.added { background: rgba(82,192,122,0.1); border-color: var(--success); color: var(--success); }
+
+    
+    .modal-bg { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+    .modal-bg.open { display: block; }
+    .modal { position: fixed; right: 0; top: 0; bottom: 0; z-index: 201; width: min(420px, 100vw); background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94); }
+    .modal.open { transform: translateX(0); }
+    .modal-header { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400; }
+    .close-btn { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 4px; transition: color 0.2s; }
+    .close-btn:hover { color: var(--text); }
+    .cart-items { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
+    .cart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 1rem; font-size: 0.9rem; }
+    .cart-empty-icon { font-size: 3rem; opacity: 0.3; }
+    .cart-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .cart-item-thumb { width: 60px; height: 60px; background: var(--surface2); border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 0.88rem; margin-bottom: 0.2rem; }
+    .cart-item-meta { font-size: 0.75rem; color: var(--muted); }
+    .cart-item-price { font-size: 0.88rem; color: var(--accent); font-weight: 500; }
+    .cart-item-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 2px; transition: color 0.2s; }
+    .cart-item-remove:hover { color: var(--danger); }
+    .cart-footer { padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border); }
+    .cart-total { display: flex; justify-content: space-between; font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; margin-bottom: 1rem; }
+    .cart-total-price { color: var(--accent); }
+    .checkout-btn { width: 100%; padding: 14px; background: var(--accent); color: var(--btn-text, #000); border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; border-radius: 2px; transition: background 0.2s; }
+    .checkout-btn:hover { background: var(--accent2); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .checkout-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    
+    .order-modal { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); display: none; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .order-modal.open { display: flex; }
+    .order-form-box { background: var(--surface); border: 1px solid var(--border); width: min(520px, 100%); max-height: 90vh; overflow-y: auto; border-radius: 4px; padding: 2rem; }
+    .order-form-box h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 400; margin-bottom: 0.4rem; }
+    .order-subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.8rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; border-radius: 2px; transition: border-color 0.2s; outline: none; appearance: none; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--surface2); }
+    .order-summary-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; padding: 1rem; margin-bottom: 1.2rem; }
+    .order-summary-title { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
+    .order-summary-item { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+    .order-summary-item:last-child { border-bottom: none; }
+    .order-total-row { display: flex; justify-content: space-between; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin-top: 0.6rem; }
+    .order-total-row span:last-child { color: var(--accent); }
+    .form-actions { display: flex; gap: 1rem; }
+    .btn-submit { flex: 1; padding: 13px; background: var(--accent); color: var(--btn-text, #000); border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; border-radius: 2px; transition: background 0.2s; }
+    .btn-submit:hover { background: var(--accent2); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-back { padding: 13px 20px; background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; border-radius: 2px; transition: border-color 0.2s, color 0.2s; }
+    .btn-back:hover { border-color: var(--text); color: var(--text); }
+    .success-screen { display: none; flex-direction: column; align-items: center; text-align: center; gap: 1rem; }
+    .success-screen.show { display: flex; }
+    .success-icon { width: 64px; height: 64px; background: rgba(82,192,122,0.1); border: 1px solid var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+    .success-screen h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 400; }
+    .success-screen p { font-size: 0.85rem; color: var(--muted); max-width: 320px; }
+    .btn-close-success { padding: 12px 30px; background: var(--accent); color: var(--btn-text, #000); border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; border-radius: 2px; margin-top: 0.5rem; }
+
+    .empty-cat { padding: 4rem 0; text-align: center; color: var(--muted); }
+    .empty-cat p { font-size: 0.9rem; margin-top: 0.5rem; }
+
+    footer { padding: 2.5rem 5%; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--text); }
+    .footer-logo span { color: var(--accent); }
+    footer p { font-size: 0.78rem; color: var(--muted); }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-links.open { display: flex; flex-direction: column; position: fixed; top: 65px; left: 0; right: 0; background: var(--surface); padding: 1.5rem 5%; border-bottom: 1px solid var(--border); z-index: 99; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html" style="visibility:hidden;"><em style="font-style:italic;font-weight:300;font-size:0.85em;">the</em> forbidden<span> style</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Начало</a></li>
+    <li><a href="products.html" class="active">Продукти</a></li>
+    <li><a href="index.html#contact">Контакт</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Количка <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <p id="products-subtitle">The Forbidden Style — Collection</p>
+  <h1>Всички продукти</h1>
+</div>
+
+<div class="filter-bar" id="filterBar" style="visibility:hidden;">
+  <button class="filter-btn active" data-cat="all" onclick="setFilter('all', this)">Всички</button>
+  <button class="filter-btn" data-cat="clothes" onclick="setFilter('clothes', this)">👕 Дрехи</button>
+  <button class="filter-btn" data-cat="bracelets" onclick="setFilter('bracelets', this)">⌚ Смарт гривни</button>
+  <button class="filter-btn" data-cat="speakers" onclick="setFilter('speakers', this)">🔊 Тонколонки</button>
+  <span class="filter-count" id="filterCount"></span>
+</div>
+
+<div class="products-section">
+  <div id="loadingState" class="loading-state">
+    <div class="spinner"></div>
+    <span>Зареждане на продуктите...</span>
+  </div>
+  <div class="products-grid" id="productsGrid" style="display:none;"></div>
+</div>
+
+<footer>
+  <div class="footer-logo"><em style="font-style:italic;font-weight:300;font-size:0.85em;">the</em> forbidden<span> style</span></div>
+  <p><span id="footerCopy">© 2026 The Forbidden Style. Всички права запазени.</span></p>
+  <p><a href="index.html">Начало</a> · <a href="index.html#contact">Контакт</a> · <a href="terms.html" id="termsLink" style="color:var(--muted);display:none;">Условия за ползване</a></p>
+</footer>
+
+<div class="modal-bg" id="cartBg" onclick="closeCart()"></div>
+<div class="modal" id="cartModal">
+  <div class="modal-header">
+    <h3>Количка</h3>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="cart-empty-icon">🛒</div><span>Количката е празна</span></div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Общо</span><span class="cart-total-price" id="cartTotal">лв 0.00</span></div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="openOrderForm()" disabled>Продължи към поръчка</button>
+  </div>
+</div>
+
+<div class="order-modal" id="orderModal">
+  <div class="order-form-box">
+    <div id="formContent">
+      <h2>Финализирай поръчката</h2>
+      <p class="order-subtitle">Попълни данните за доставка</p>
+      <div class="order-summary-box">
+        <p class="order-summary-title">Твоята поръчка</p>
+        <div id="orderSummaryItems"></div>
+        <div class="order-total-row"><span>Общо:</span><span id="orderSummaryTotal">лв 0.00</span></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Куриер *</label><select id="courier" required><option value="">Избери</option><option value="Econt">Econt</option><option value="Speedy">Speedy</option></select></div>
+        <div class="form-group"><label>Имe и фамилия *</label><input type="text" id="fullName" placeholder="Иван Иванов" required /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Телефон *</label><input type="tel" id="phone" placeholder="08XXXXXXXX" required inputmode="numeric" onkeypress="return /[\d\s]/.test(event.key)" oninput="this.value=this.value.replace(/[^\d\s]/g,'')" /></div>
+        <div class="form-group"><label>Имейл ✉️</label><input type="email" id="email" placeholder="За потвърждение (опция)" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Град *</label><input type="text" id="city" placeholder="София" required /></div>
+        <div class="form-group"><label>Офис на куриера *</label><input type="text" id="office" placeholder="Офис / адрес" required /></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-back" onclick="closeOrderForm()">← Назад</button>
+        <button class="btn-submit" id="submitBtn" onclick="submitOrder()">Изпрати поръчка</button>
+      </div>
+    </div>
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✓</div>
+      <h3>Поръчката е изпратена!</h3>
+      <p>Ще се свържем с теб скоро. Провери имейла си за потвърждение.</p>
+      <button class="btn-close-success" onclick="closeAll()">Затвори</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  
+  
+  var SCRIPT_URL = atob('aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4M0FkTDBGWjB0Nm9maWp4NlZXNFczSlpDVndYcWVXOGQzMnBwMllMMkFDaVkxRERCenV2bGk0TDB6bnZ0bkplemovZXhlYw==');
+
+  
+  const CAT_META = {
+    clothes:   { emoji: '👕', label: 'Дрехи',        bg: 'clothes-bg' },
+    bracelets: { emoji: '⌚', label: 'Смарт гривни', bg: 'bracelets-bg' },
+    speakers:  { emoji: '🔊', label: 'Тонколонки',   bg: 'speakers-bg' },
+  };
+  const CAT_ORDER = ['clothes', 'bracelets', 'speakers'];
+
+  
+  let allProducts = [];
+  let cart = [];
+  let currentFilter = 'all';
+  let selectedSizes = {};
+  let urgencySettings = { enabled: false, qty: 2 }; 
+
+  
+  async function loadProducts() {
+    try {
+      const res = await fetch('https://raw.githubusercontent.com/BSrank/frbstyle/main/products.json?t=' + Date.now());
+      const data = await res.json();
+      allProducts = data.products || [];
+      urgencySettings = data.urgency || { enabled: false, qty: 2 };
+      loadCustomCategories(data.settings || {});
+      applyTheme((data.settings || {}).theme || 'noir-luxe');
+      if (data.settings && data.settings.scriptUrlEncoded) { try { SCRIPT_URL = atob(data.settings.scriptUrlEncoded); } catch(e) {} }
+      window._siteSettings = data.settings || {};
+      const termsLink = document.getElementById('termsLink');
+      if (termsLink) termsLink.style.display = (data.settings && data.settings.showTerms) ? 'inline' : 'none';
+      const sName = (data.settings && data.settings.siteName) ? data.settings.siteName : 'The Forbidden Style';
+      document.title = sName + ' — Продукти';
+      document.querySelectorAll('.nav-logo').forEach(function(el) {
+        const words = sName.split(' ');
+        const last = words.pop();
+        const first = words[0] || '';
+        const middle = words.slice(1).join(' ');
+        let html = '';
+        if (first.toLowerCase() === 'the') {
+          html = '<em style="font-style:italic;font-weight:300;font-size:0.85em;">the</em> ' + (middle ? middle + ' ' : '') + '<span>' + last + '</span>';
+        } else {
+          html = (words.join(' ') ? words.join(' ') + ' ' : '') + '<span>' + last + '</span>';
+        }
+        el.innerHTML = html;
+        el.style.visibility = 'visible';
+      });
+      document.querySelectorAll('.footer-logo').forEach(function(el) { el.textContent = sName; });
+      const footerCopy = document.getElementById('footerCopy');
+      if (footerCopy) footerCopy.textContent = '© 2026 ' + sName + '. Всички права запазени.';
+      const subtitle = document.getElementById('products-subtitle');
+      if (subtitle) subtitle.textContent = (data.settings && data.settings.productsSubtitle) ? data.settings.productsSubtitle : sName + ' — Collection';
+    } catch (e) {
+      console.warn('Не може да зареди от Google Sheets, ползва demo данни.');
+      allProducts = getDemoProducts();
+    }
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('productsGrid').style.display = 'grid';
+    document.getElementById('filterBar').style.visibility = 'visible';
+
+    updateFilterVisibility();
+
+    const urlCat = new URLSearchParams(window.location.search).get('cat');
+    const allCatIds = Object.keys(CAT_META);
+    if (urlCat && allCatIds.includes(urlCat)) {
+      currentFilter = urlCat;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.cat === urlCat);
+      });
+    }
+    renderProducts();
+  }
+
+  function loadCustomCategories(settings) {
+    const customCats = settings.customCategories || [];
+    customCats.forEach(c => {
+      if (!CAT_META[c.id]) {
+        CAT_META[c.id] = { emoji: c.emoji, label: c.name, bg: 'custom-bg' };
+        const filterBar = document.getElementById('filterBar');
+        if (filterBar) {
+          const btn = document.createElement('button');
+          btn.className = 'filter-btn';
+          btn.dataset.cat = c.id;
+          btn.textContent = c.emoji + ' ' + c.name;
+          btn.onclick = function() { setFilter(c.id, btn); };
+          filterBar.insertBefore(btn, document.getElementById('filterCount'));
+        }
+      }
+    });
+  }
+
+  function getDemoProducts() {
+    return [];
+  }
+
+  
+  function setFilter(cat, btn) {
+    currentFilter = cat;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderProducts();
+  }
+
+  function isVisible(p) {
+    return p.active === true || p.active === 'TRUE' || p.active === 1 || p.active === '1';
+  }
+
+  function updateFilterVisibility() {
+    
+    document.querySelectorAll('.filter-btn[data-cat]').forEach(btn => {
+      const cat = btn.dataset.cat;
+      if (cat === 'all') return;
+      const visible = allProducts.some(p => p.category === cat && isVisible(p));
+      btn.style.display = visible ? '' : 'none';
+    });
+  }
+
+  function renderProducts() {
+    const grid = document.getElementById('productsGrid');
+
+    
+    const active = allProducts.filter(isVisible);
+
+    const filtered = currentFilter === 'all'
+      ? active
+      : active.filter(p => p.category === currentFilter);
+
+    document.getElementById('filterCount').textContent =
+      filtered.length + ' продукт' + (filtered.length === 1 ? '' : 'а');
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-cat" style="grid-column:1/-1">
+        <p style="font-size:2rem;">🔍</p>
+        <p>Очаквайте скоро нови продукти в тази категория.</p>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(p => renderCard(p)).join('');
+    setupImageGalleries();
+  }
+
+
+  var THEMES = {
+  'noir-luxe': {fonts:'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#2a2a2a;--text:#f0ece4;--muted:#888;--accent:#c9a96e;--accent2:#e8d5b0;--danger:#e05252;--success:#52c07a;;--btn-text:#000} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#111111;border-bottom:1px solid #1e1e1e;} .nav-logo{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .nav-logo span{color:#c9a96e;} .hero-eyebrow{color:#c9a96e;} .hero h1{font-family:\'Cormorant Garamond\',serif;font-weight:300;color:#f0ece4;} .hero h1 em{color:#c9a96e;font-style:italic;} .hero-cta{background:#c9a96e;color:#000;border-radius:0;border:none;} .hero-cta:hover{background:#e8d5b0;} .section-title{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .cat-name{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .product-name{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .product-price{font-family:\'Cormorant Garamond\',serif;color:#c9a96e;} .footer-logo{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .footer-logo span{color:#c9a96e;} .page-header h1{font-family:\'Cormorant Garamond\',serif;color:#f0ece4;} .add-to-cart{background:#c9a96e;color:#000;border-radius:0;} .hero-btn-outline{border-color:#c9a96e;color:#c9a96e;} '},
+  'blanc-eclat': {fonts:'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#fafaf8;--surface:#ffffff;--surface2:#f0ebe0;--border:#e8e4dd;--text:#1a1a1a;--muted:#888;--accent:#8b6914;--accent2:#c9a96e;--danger:#e05252;--success:#52c07a;;--btn-text:#fff} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#fafaf8;border-bottom:1px solid #e8e4dd;} .nav-logo{font-family:\'Playfair Display\',serif;color:#1a1a1a;font-style:italic;} .nav-logo span{color:#8b6914;} .nav a{color:#1a1a1a;} .hero-eyebrow{color:#8b6914;} .hero h1{font-family:\'Playfair Display\',serif;font-weight:400;color:#1a1a1a;} .hero h1 em{color:#8b6914;font-style:italic;} .hero-cta{background:#1a1a1a;color:#fff;border-radius:0;border:1px solid #1a1a1a;} .hero-cta:hover{background:#333;} .section-title{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .cat-name{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .product-name{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .product-price{color:#8b6914;} .footer-logo{font-family:\'Playfair Display\',serif;color:#1a1a1a;font-style:italic;} .footer-logo span{color:#8b6914;} .page-header h1{font-family:\'Playfair Display\',serif;color:#1a1a1a;} .add-to-cart{background:#1a1a1a;color:#fff;border-radius:0;} .cart-panel,.cart-backdrop{--surface:#ffffff;--text:#1a1a1a;} '},
+  'chrome-wave': {fonts:'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap',css:' :root{--bg:#0d0d14;--surface:#13131f;--surface2:#1a1a2e;--border:rgba(255,255,255,0.08);--text:#ffffff;--muted:rgba(255,255,255,0.4);--accent:#a78bfa;--accent2:#60a5fa;--danger:#f87171;--success:#34d399;;--btn-text:#fff} body{background:var(--bg);color:var(--text);font-family:\'Space Grotesk\',sans-serif;} nav{background:rgba(13,13,20,0.95);border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(10px);} .nav-logo{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:600;} .nav-logo span{background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;} .nav a{color:rgba(255,255,255,0.7);} .hero-eyebrow{color:#a78bfa;font-family:\'Space Grotesk\',sans-serif;} .hero h1{font-family:\'Space Grotesk\',sans-serif;font-weight:700;color:#fff;letter-spacing:-0.03em;} .hero h1 em{background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-style:normal;} .hero-cta{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;border-radius:8px;border:none;font-family:\'Space Grotesk\',sans-serif;font-weight:600;} .section-title{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:700;letter-spacing:-0.03em;} .cat-name{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:600;} .product-name{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:500;} .product-price{color:#a78bfa;font-family:\'Space Grotesk\',sans-serif;} .footer-logo{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:700;} .footer-logo span{background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;} .page-header h1{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:700;} .add-to-cart{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;border-radius:8px;border:none;} .product-card{border-radius:8px;} .size-btn{border-radius:4px;} '},
+  'rose-atelier': {fonts:'https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap',css:' :root{--bg:#fdf6f0;--surface:#ffffff;--surface2:#fde8df;--border:#e8d5c8;--text:#2c1810;--muted:#886050;--accent:#c4614a;--accent2:#e8a090;--danger:#e05252;--success:#52c07a;;--btn-text:#fff} body{background:var(--bg);color:var(--text);font-family:\'Inter\',sans-serif;} nav{background:#fdf6f0;border-bottom:1px solid #e8d5c8;} .nav-logo{font-family:\'Libre Baskerville\',serif;color:#2c1810;font-style:italic;} .nav-logo span{color:#c4614a;font-style:normal;} .nav a{color:#2c1810;} .hero-eyebrow{color:#c4614a;font-family:\'Inter\',sans-serif;} .hero h1{font-family:\'Libre Baskerville\',serif;font-weight:400;color:#2c1810;} .hero h1 em{color:#c4614a;font-style:italic;} .hero-cta{background:#c4614a;color:#fff;border-radius:24px;border:none;font-family:\'Inter\',sans-serif;} .hero-cta:hover{background:#a84f3a;} .section-title{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .cat-name{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .product-name{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .product-price{color:#c4614a;} .footer-logo{font-family:\'Libre Baskerville\',serif;color:#2c1810;font-style:italic;} .footer-logo span{color:#c4614a;} .page-header h1{font-family:\'Libre Baskerville\',serif;color:#2c1810;} .add-to-cart{background:#c4614a;color:#fff;border-radius:24px;border:none;} .product-card{border-radius:12px;} .size-btn{border-radius:12px;} '},
+  'concrete-edge': {fonts:'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap',css:' :root{--bg:#f2f0ed;--surface:#ffffff;--surface2:#e8e4dc;--border:#d0ccc4;--text:#1c1c1c;--muted:#666;--accent:#e8d44d;--accent2:#f0e060;--danger:#e05252;--success:#52c07a;;--btn-text:#1c1c1c} body{background:var(--bg);color:var(--text);font-family:\'Space Grotesk\',sans-serif;} nav{background:#1c1c1c;border-bottom:none;} .nav-logo{font-family:\'Space Grotesk\',sans-serif;color:#f2f0ed;font-weight:700;} .nav-logo span{color:#e8d44d;-webkit-text-fill-color:#e8d44d;} .nav a,.nav-links a{color:rgba(255,255,255,0.7);} .cart-btn{color:#f2f0ed;border-color:rgba(255,255,255,0.2);} .hero-eyebrow{color:#e8d44d;font-family:\'Space Grotesk\',sans-serif;font-weight:600;} .hero h1{font-family:\'Space Grotesk\',sans-serif;font-weight:700;color:#1c1c1c;letter-spacing:-0.04em;} .hero h1 em{color:#e8d44d;font-style:normal;} .hero-cta{background:#e8d44d;color:#1c1c1c;border-radius:0;border:none;font-family:\'Space Grotesk\',sans-serif;font-weight:700;} .hero-cta:hover{background:#f0e060;} .section-title{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:700;letter-spacing:-0.03em;} .cat-name{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:700;text-transform:uppercase;} .product-name{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:600;letter-spacing:-0.01em;} .product-price{color:#1c1c1c;font-family:\'Space Grotesk\',sans-serif;font-weight:700;} .footer-logo{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:800;text-transform:uppercase;} .footer-logo span{color:#e8d44d;-webkit-text-fill-color:#e8d44d;} .page-header h1{font-family:\'Space Grotesk\',sans-serif;color:#1c1c1c;font-weight:700;} .page-header p{color:#666;} .add-to-cart{background:#1c1c1c;color:#f2f0ed;border-radius:0;border:none;} .product-card{border-left:3px solid #e8d44d;border-radius:0;} '},
+  'ink-editorial': {fonts:'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#f7f5f0;--surface:#ffffff;--surface2:#e8e4dc;--border:#d8d4cc;--text:#111111;--muted:#888;--accent:#111111;--accent2:#333;--danger:#e05252;--success:#52c07a;;--btn-text:#f7f5f0} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#f7f5f0;border-bottom:3px solid #111;} .nav-logo{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;} .nav-logo span{-webkit-text-stroke:1.5px #111;color:transparent;-webkit-text-fill-color:transparent;} .nav a{color:#111;} .hero-eyebrow{color:#888;font-family:\'Syne\',sans-serif;font-weight:600;} .hero h1{font-family:\'Syne\',sans-serif;font-weight:800;color:#111;text-transform:uppercase;letter-spacing:-0.04em;} .hero h1 em{-webkit-text-stroke:1.5px #111;color:transparent;-webkit-text-fill-color:transparent;font-style:normal;} .hero-cta{background:#111;color:#f7f5f0;border-radius:0;font-family:\'Syne\',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;} .hero-cta:hover{background:#333;} .section-title{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;letter-spacing:-0.02em;} .cat-name{font-family:\'Syne\',sans-serif;color:#111;font-weight:700;text-transform:uppercase;} .product-name{font-family:\'Syne\',sans-serif;color:#111;font-weight:700;} .product-price{color:#111;font-family:\'DM Sans\',sans-serif;} .footer-logo{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;} .footer-logo span{color:#111;-webkit-text-fill-color:#111;} .page-header h1{font-family:\'Syne\',sans-serif;color:#111;font-weight:800;text-transform:uppercase;} .add-to-cart{background:#111;color:#f7f5f0;border-radius:0;font-family:\'Syne\',sans-serif;font-weight:700;} .product-card{border:1px solid #d8d4cc;border-radius:0;} '},
+  'solar-flare': {fonts:'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&display=swap',css:' :root{--bg:#fff8f0;--surface:#ffffff;--surface2:#fff0e8;--border:#e8d0b8;--text:#111111;--muted:#666;--accent:#ff4d00;--accent2:#ff7733;--danger:#e05252;--success:#52c07a;;--btn-text:#fff} body{background:var(--bg);color:var(--text);font-family:\'Montserrat\',sans-serif;} nav{background:#ff4d00;border-bottom:none;} .nav-logo{font-family:\'Montserrat\',sans-serif;color:#fff;font-weight:900;} .nav-logo span{color:#fff;-webkit-text-fill-color:#fff;} .nav a,.nav-links a,.cart-btn{color:rgba(255,255,255,0.9);} .cart-btn{border-color:rgba(255,255,255,0.3);} .hero-eyebrow{color:#ff4d00;font-family:\'Montserrat\',sans-serif;font-weight:700;} .hero h1{font-family:\'Montserrat\',sans-serif;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:-0.02em;} .hero h1 em{color:#ff4d00;font-style:normal;} .hero{background:#111!important;} .hero-cta{background:#ff4d00;color:#fff;border-radius:0;font-family:\'Montserrat\',sans-serif;font-weight:700;text-transform:uppercase;} .hero-cta:hover{background:#cc3d00;} .section-title{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;} .cat-name{font-family:\'Montserrat\',sans-serif;color:#f0ece4;font-weight:700;text-transform:uppercase;} .product-name{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:700;} .product-price{color:#ff4d00;font-family:\'Montserrat\',sans-serif;font-weight:600;} .footer-logo{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:900;text-transform:uppercase;} .footer-logo span{color:#ff4d00;-webkit-text-fill-color:#ff4d00;} .page-header h1{font-family:\'Montserrat\',sans-serif;color:#111;font-weight:900;text-transform:uppercase;} .add-to-cart{background:#ff4d00;color:#fff;border-radius:0;font-weight:700;} .product-card{border-top:3px solid #ff4d00;box-shadow:4px 4px 0 #111;border-radius:0;} '},
+  'pearl-minimal': {fonts:'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#ffffff;--surface:#ffffff;--surface2:#f8f8f8;--border:#e0e0e0;--text:#1a1a1a;--muted:#aaa;--accent:#1a1a1a;--accent2:#444;--danger:#e05252;--success:#52c07a;;--btn-text:#fff} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#fff;border-bottom:1px solid #e0e0e0;} .nav-logo{font-family:\'Fraunces\',serif;color:#1a1a1a;font-style:italic;font-weight:300;} .nav-logo span{color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;} .nav a{color:#1a1a1a;} .hero-eyebrow{color:#aaa;letter-spacing:0.3em;} .hero h1{font-family:\'Fraunces\',serif;font-weight:300;color:#1a1a1a;font-style:italic;} .hero h1 em{color:#1a1a1a;font-style:italic;} .hero-cta{background:transparent;color:#1a1a1a;border:1px solid #1a1a1a;border-radius:0;font-family:\'DM Sans\',sans-serif;letter-spacing:0.15em;} .hero-cta:hover{background:#1a1a1a;color:#fff;} .section-title{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .cat-name{font-family:\'Fraunces\',serif;color:#f0ece4;font-weight:300;font-style:italic;} .product-name{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .product-price{color:#888;font-family:\'DM Sans\',sans-serif;} .footer-logo{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .footer-logo span{color:#1a1a1a;-webkit-text-fill-color:#1a1a1a;} .page-header h1{font-family:\'Fraunces\',serif;color:#1a1a1a;font-weight:300;font-style:italic;} .add-to-cart{background:#1a1a1a;color:#fff;border-radius:0;} .product-card{box-shadow:none;border:none;border-bottom:1px solid #e0e0e0;border-radius:0;} '},
+  'voltage': {fonts:'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600&display=swap',css:' :root{--bg:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#222222;--text:#ffffff;--muted:#444;--accent:#00ff88;--accent2:#00ccff;--danger:#f87171;--success:#00ff88;;--btn-text:#0a0a0a} body{background:var(--bg);color:var(--text);font-family:\'Space Grotesk\',sans-serif;} nav{background:#0a0a0a;border-bottom:1px solid #1a1a1a;} .nav-logo{font-family:\'Bebas Neue\',sans-serif;color:#fff;font-weight:400;font-size:1.4rem !important;} .nav-logo span{color:#00ff88;-webkit-text-fill-color:#00ff88;} .nav a{color:#fff;} .hero-eyebrow{color:#00ff88;font-family:\'Space Grotesk\',sans-serif;font-weight:500;letter-spacing:0.2em;} .hero h1{font-family:\'Bebas Neue\',sans-serif;font-weight:400;color:#fff;letter-spacing:0.05em;font-size:clamp(3rem,8vw,6rem) !important;} .hero h1 em{color:#00ff88;font-style:normal;} .hero-cta{background:transparent;color:#00ff88;border:1px solid #00ff88;border-radius:0;font-family:\'Space Grotesk\',sans-serif;font-weight:500;letter-spacing:0.1em;} .hero-cta:hover{background:#00ff88;color:#0a0a0a;} .section-title{font-family:\'Bebas Neue\',sans-serif;color:#fff;font-weight:400;letter-spacing:0.05em;} .cat-name{font-family:\'Bebas Neue\',sans-serif;color:#fff;font-weight:400;letter-spacing:0.05em;} .product-name{font-family:\'Space Grotesk\',sans-serif;color:#fff;font-weight:600;} .product-price{color:#00ff88;font-family:\'Space Grotesk\',sans-serif;font-weight:600;} .footer-logo{font-family:\'Bebas Neue\',sans-serif;color:#fff;letter-spacing:0.08em;font-size:1.2rem;} .footer-logo span{color:#00ff88;-webkit-text-fill-color:#00ff88;} .page-header h1{font-family:\'Bebas Neue\',sans-serif;color:#fff;letter-spacing:0.05em;} .add-to-cart{background:#00ff88;color:#0a0a0a;border-radius:0;font-family:\'Space Grotesk\',sans-serif;font-weight:700;} .add-to-cart:hover{background:#00ccff;} .product-card::before{content:\'\';display:block;height:2px;background:linear-gradient(90deg,#00ff88,#00ccff);} .product-card{border-radius:0;} '},
+  'sand-dune': {fonts:'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap',css:' :root{--bg:#f0ead8;--surface:#ffffff;--surface2:#e8dcc8;--border:#d4c4a0;--text:#3d2e1e;--muted:#7a6040;--accent:#c9a96e;--accent2:#e8d4a0;--danger:#e05252;--success:#52c07a;;--btn-text:#3d2e1e} body{background:var(--bg);color:var(--text);font-family:\'DM Sans\',sans-serif;} nav{background:#f0ead8;border-bottom:2px solid #3d2e1e;} .nav-logo{font-family:\'Fraunces\',serif;color:#3d2e1e;font-style:italic;font-weight:400;} .nav-logo span{color:#c9a96e;-webkit-text-fill-color:#c9a96e;} .nav a{color:#3d2e1e;} .hero-eyebrow{color:#c9a96e;font-family:\'DM Sans\',sans-serif;} .hero h1{font-family:\'Fraunces\',serif;font-weight:400;color:#f0ead8;font-style:italic;} .hero h1 em{color:#c9a96e;font-style:italic;} .hero{background:#3d2e1e !important;} .hero-cta{background:#c9a96e;color:#3d2e1e;border-radius:4px;border:none;font-family:\'DM Sans\',sans-serif;font-weight:500;} .hero-cta:hover{background:#e8d4a0;} .section-title{font-family:\'Fraunces\',serif;color:#3d2e1e;font-weight:400;font-style:italic;} .cat-name{font-family:\'Fraunces\',serif;color:#f0ead8;font-weight:400;font-style:italic;} .product-name{font-family:\'Fraunces\',serif;color:#3d2e1e;font-weight:400;font-style:italic;} .product-price{color:#c9a96e;} .footer-logo{font-family:\'Fraunces\',serif;color:#3d2e1e;font-style:italic;} .footer-logo span{color:#c9a96e;-webkit-text-fill-color:#c9a96e;} .page-header h1{font-family:\'Fraunces\',serif;color:#3d2e1e;font-style:italic;} .add-to-cart{background:#3d2e1e;color:#f0ead8;border-radius:4px;} .product-card{border-radius:4px;box-shadow:0 4px 20px rgba(61,46,30,0.1);} '}
+};
+
+  function applyTheme(id) {
+    var t = THEMES[id] || THEMES['noir-luxe'];
+    var es = document.getElementById('theme-style');
+    if (es) es.remove();
+    var s = document.createElement('style');
+    s.id = 'theme-style';
+    s.textContent = t.css;
+    document.head.appendChild(s);
+    var ef = document.getElementById('theme-font');
+    if (ef) ef.remove();
+    var l = document.createElement('link');
+    l.id = 'theme-font';
+    l.rel = 'stylesheet';
+    l.href = t.fonts;
+    document.head.appendChild(l);
+  }
+
+  const EUR_RATE = 1.95583;
+
+  function renderDesc(desc, formatted) {
+    if (!desc) return '';
+    if (!formatted) return desc.replace(/\n/g, '<br>');
+    const lines = desc.split('\n');
+    let html = '';
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) { html += '<div class="desc-gap"></div>'; continue; }
+      if (line.endsWith(':')) {
+        html += '<div class="desc-header">' + boldify(line.slice(0,-1)) + '</div>';
+      } else if (line.startsWith('\u2192') || line.startsWith('-')) {
+        const text = line.replace(/^[\u2192\-]\s*/, '');
+        html += '<div class="desc-item">' + boldify(text) + '</div>';
+      } else {
+        html += '<span style="font-size:0.78rem;color:var(--muted);">' + boldify(line) + '</span><br>';
+      }
+    }
+    return html;
+  }
+
+  function boldify(text) {
+    return text.replace(/\*\*([^*]+)\*\*/g, '<strong style="color:var(--text);">$1</strong>');
+  }
+
+  function toEUR(bgn) { return (parseFloat(bgn) / EUR_RATE).toFixed(2); }
+  function priceDisplay(bgn) { return '€' + toEUR(bgn) + ' <span style="color:var(--muted);font-size:0.8em;">(' + parseFloat(bgn).toFixed(2) + ' лв)</span>'; }
+  
+  
+  
+  const MAX_IMAGES_PER_PRODUCT = 8; 
+
+  function getImagePaths(p) {
+    var paths = [];
+    var exts = ['jpg', 'jpeg', 'png', 'webp'];
+    for (var i = 1; i <= MAX_IMAGES_PER_PRODUCT; i++) {
+      exts.forEach(function(ext) {
+        paths.push('images/' + p.category + '/' + p.id + '/' + i + '.' + ext);
+      });
+    }
+    return paths;
+  }
+
+  function renderCard(p) {
+    const meta = CAT_META[p.category] || { emoji: '📦', label: p.category, bg: '' };
+    const imagePaths = getImagePaths(p);
+    const isClothes = p.category === 'clothes' && p.sizes && p.sizes.length > 0;
+    const selectedSize = selectedSizes[p.id];
+    const needsSizeChoice = isClothes && !selectedSize;
+
+    const sizesHTML = isClothes ? `
+      <div class="size-label">Размер:</div>
+      <div class="size-options">
+        ${p.sizes.map(s => {
+          const outOfStock = (s.qty ?? 0) === 0;
+          const isSelected = selectedSizes[p.id] === s.size;
+          return `<button
+            class="size-btn ${isSelected ? 'selected' : ''}"
+            ${outOfStock ? 'disabled' : ''}
+            onclick="selectSize('${p.id}', '${s.size}', this)"
+            title="${outOfStock ? 'Изчерпан' : 'Наличност: ' + s.qty + ' бр.'}">
+            ${s.size}
+            ${outOfStock ? '<small class="size-out-label">изчерпан</small>' : ''}
+          </button>`;
+        }).join('')}
+      </div>` : '';
+
+    const btnDisabled = needsSizeChoice;
+    const btnText = needsSizeChoice ? 'Избери размер' : '+ Добави в количка';
+
+    return `
+      <div class="product-card" id="card-${p.id}">
+        <div class="product-img ${meta.bg}" id="imgwrap-${p.id}">
+          <span class="img-fallback-emoji">${meta.emoji}</span>
+          <div class="zoom-hint">🔍</div>
+          <img
+            src="${imagePaths[0]}"
+            alt="${p.name}"
+            class="product-photo"
+            id="photo-${p.id}"
+            data-idx="0"
+            data-paths='${JSON.stringify(imagePaths)}'
+            loading="lazy"
+            decoding="async"
+            onerror="handleImgError(this)"
+            onload="this.style.opacity=1; this.previousElementSibling.style.display='none';"
+          />
+          <div class="img-nav" id="imgnav-${p.id}" style="display:none;">
+            <button class="img-nav-btn prev" onclick="changeImage('${p.id}', -1)">‹</button>
+            <div class="img-dots" id="imgdots-${p.id}"></div>
+            <button class="img-nav-btn next" onclick="changeImage('${p.id}', 1)">›</button>
+          </div>
+        </div>
+        <div class="product-body">
+          <p class="product-cat">${meta.label}</p>
+          <h3 class="product-name">${p.name}</h3>
+          <div class="product-desc">${renderDesc(p.desc, p.descFormatted)}</div>
+          <p class="product-price" style="font-size:1.4rem;margin-top:0.5rem;">${priceDisplay(p.price)}</p>
+          ${urgencySettings.enabled ? '<p style="font-size:0.72rem;color:var(--danger);letter-spacing:0.05em;margin-bottom:0.5rem;">🔥 Само ' + urgencySettings.qty + ' бройки налични</p>' : ''}
+          ${sizesHTML}
+          <button
+            class="add-btn"
+            id="addbtn-${p.id}"
+            ${btnDisabled ? 'disabled' : ''}
+            onclick="handleAdd('${p.id}')">
+            ${btnText}
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function selectSize(productId, size, btn) {
+    const card = document.getElementById('card-' + productId);
+    card.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedSizes[productId] = size;
+    const addBtn = document.getElementById('addbtn-' + productId);
+    addBtn.disabled = false;
+    addBtn.textContent = '+ Добави в количка';
+    addBtn.classList.remove('added');
+  }
+
+  
+  
+  function handleImgError(imgEl) {
+    const paths = JSON.parse(imgEl.dataset.paths);
+    let idx = parseInt(imgEl.dataset.idx);
+    idx++;
+    if (idx < paths.length) {
+      imgEl.dataset.idx = idx;
+      imgEl.src = paths[idx];
+    } else {
+      imgEl.style.display = 'none';
+      imgEl.dataset.maxReached = '1';
+    }
+  }
+
+  function setupImageGalleries() {
+    allProducts.forEach(p => {
+      // Ако продуктът има предварително сканирани снимки в JSON — използваме ги директно
+      if (p.images && p.images.length > 0) {
+        initGallery(p, p.images);
+      } else {
+        // Fallback: сканираме (за стари продукти без images в JSON)
+        checkAvailableImages(p);
+      }
+    });
+  }
+
+  function initGallery(p, found) {
+    const img = document.getElementById('photo-' + p.id);
+    if (!img) return;
+    img.dataset.foundPaths = JSON.stringify(found);
+    img.dataset.foundIdx = '0';
+    img.src = found[0];
+    img.style.opacity = '1';
+    if (img.previousElementSibling) img.previousElementSibling.style.display = 'none';
+    img.style.cursor = 'zoom-in';
+    // Preload всички снимки на продукта
+    found.slice(1).forEach(function(src) { var pi = new Image(); pi.src = src; });
+
+    // Click → lightbox (само ако не е бил swipe)
+    img.onclick = function() {
+      if (!img._wasSwiped) openLightbox(p.id);
+      img._wasSwiped = false;
+    };
+
+    // Swipe на карта → смяна на снимка (без lightbox)
+    if (found.length > 1) {
+      let tx = 0;
+      let ty = 0;
+      let isHorizontal = null;
+
+      img.addEventListener('touchstart', function(e) {
+        tx = e.touches[0].clientX;
+        ty = e.touches[0].clientY;
+        isHorizontal = null;
+        img._wasSwiped = false;
+      }, { passive: true });
+
+      img.addEventListener('touchmove', function(e) {
+        const dx = Math.abs(e.touches[0].clientX - tx);
+        const dy = Math.abs(e.touches[0].clientY - ty);
+        if (isHorizontal === null) {
+          isHorizontal = dx > dy;
+        }
+        if (isHorizontal) e.preventDefault();
+      }, { passive: false });
+
+      img.addEventListener('touchend', function(e) {
+        const dx = e.changedTouches[0].clientX - tx;
+        if (isHorizontal && Math.abs(dx) > 35) {
+          img._wasSwiped = true;
+          changeImage(p.id, dx < 0 ? 1 : -1);
+        }
+      }, { passive: true });
+
+      const nav = document.getElementById('imgnav-' + p.id);
+      const dots = document.getElementById('imgdots-' + p.id);
+      if (!nav || !dots) return;
+      nav.style.display = 'flex';
+      nav.dataset.count = found.length;
+      dots.innerHTML = found.map((_, i) =>
+        '<span class="img-dot ' + (i === 0 ? 'active' : '') + '"></span>'
+      ).join('');
+    }
+  }
+
+  async function checkAvailableImages(p) {
+    const exts = ['jpg', 'png', 'webp'];
+    const found = [];
+    let emptyInARow = 0;
+
+    for (let i = 1; i <= 50; i++) {
+      let foundThisNumber = false;
+      for (const ext of exts) {
+        const path = 'images/' + p.category + '/' + p.id + '/' + i + '.' + ext;
+        try {
+          const res = await fetch(path, { method: 'HEAD' });
+          if (res.ok) { found.push(path); foundThisNumber = true; break; }
+        } catch(e) {}
+      }
+      if (foundThisNumber) {
+        emptyInARow = 0;
+      } else {
+        emptyInARow++;
+        if (emptyInARow >= 3) break;
+      }
+    }
+
+    if (found.length === 0) return;
+
+    const img = document.getElementById('photo-' + p.id);
+    if (!img) return;
+
+    // Store all found paths
+    img.dataset.foundPaths = JSON.stringify(found);
+    img.dataset.foundIdx = '0';
+    img.src = found[0];
+    img.style.opacity = '1';
+    if (img.previousElementSibling) img.previousElementSibling.style.display = 'none';
+
+    // Add lightbox click
+    img.style.cursor = 'zoom-in';
+    img.onclick = function() { openLightbox(p.id); };
+
+    if (found.length > 1) {
+      const nav = document.getElementById('imgnav-' + p.id);
+      const dots = document.getElementById('imgdots-' + p.id);
+      if (!nav || !dots) return;
+      nav.style.display = 'flex';
+      nav.dataset.count = found.length;
+      dots.innerHTML = found.map((_, i) =>
+        '<span class="img-dot ' + (i === 0 ? 'active' : '') + '"></span>'
+      ).join('');
+    }
+  }
+
+  function preloadAdjacentImages(found, idx) {
+    const next = (idx + 1) % found.length;
+    const prev = (idx - 1 + found.length) % found.length;
+    [next, prev].forEach(function(i) {
+      if (i !== idx) { var img = new Image(); img.src = found[i]; }
+    });
+  }
+
+  function changeImage(productId, dir) {
+    const img = document.getElementById('photo-' + productId);
+    const nav = document.getElementById('imgnav-' + productId);
+    const dots = document.getElementById('imgdots-' + productId);
+    if (!img || !nav) return;
+    const found = JSON.parse(img.dataset.foundPaths || '[]');
+    if (!found.length) return;
+    let idx = parseInt(img.dataset.foundIdx || '0');
+    idx = (idx + dir + found.length) % found.length;
+    img.dataset.foundIdx = idx;
+    img.style.opacity = '0.7';
+    img.src = found[idx];
+    img.onload = function() { img.style.opacity = '1'; };
+    img.style.transition = 'opacity 0.15s ease';
+    if (dots) dots.querySelectorAll('.img-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    preloadAdjacentImages(found, idx);
+    // Sync lightbox if open
+    const lb = document.getElementById('lightbox');
+    if (lb && lb.classList.contains('open')) {
+      document.getElementById('lightboxImg').src = found[idx];
+      document.getElementById('lightboxCounter').textContent = (idx+1) + ' / ' + found.length;
+    }
+  }
+
+  // ─── LIGHTBOX ───
+  function openLightbox(productId) {
+    const img = document.getElementById('photo-' + productId);
+    const found = JSON.parse(img.dataset.foundPaths || '[]');
+    if (!found.length) return;
+    const idx = parseInt(img.dataset.foundIdx || '0');
+    document.getElementById('lightboxImg').src = found[idx];
+    document.getElementById('lightboxCounter').textContent = found.length > 1 ? (idx+1) + ' / ' + found.length : '';
+    document.getElementById('lightboxPrev').style.display = found.length > 1 ? 'flex' : 'none';
+    document.getElementById('lightboxNext').style.display = found.length > 1 ? 'flex' : 'none';
+    document.getElementById('lightbox').dataset.productId = productId;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function lightboxNav(dir) {
+    const productId = document.getElementById('lightbox').dataset.productId;
+    changeImage(productId, dir);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    var lb = document.getElementById('lightbox');
+    if (!lb || !lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+  });
+
+  var _touchStartX = 0;
+  var _touchStartY = 0;
+
+  document.addEventListener('touchstart', function(e) {
+    var lb = document.getElementById('lightbox');
+    if (!lb || !lb.classList.contains('open')) return;
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    var lb = document.getElementById('lightbox');
+    if (!lb || !lb.classList.contains('open')) return;
+    var dx = e.changedTouches[0].clientX - _touchStartX;
+    var dy = e.changedTouches[0].clientY - _touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      lightboxNav(dx < 0 ? 1 : -1);
+    } else if (Math.abs(dy) > 80 && Math.abs(dy) > Math.abs(dx)) {
+      closeLightbox();
+    }
+  }, { passive: true });
+
+  function handleAdd(productId) {
+    const p = allProducts.find(x => x.id === productId);
+    if (!p) return;
+    const isClothes = p.category === 'clothes' && p.sizes && p.sizes.length > 0;
+    const size = isClothes ? selectedSizes[productId] : null;
+    if (isClothes && !size) return; 
+    const meta = CAT_META[p.category] || { emoji: '📦' };
+    addToCart({ id: p.id, name: p.name, price: p.price, size, emoji: meta.emoji });
+
+    const btn = document.getElementById('addbtn-' + productId);
+    btn.classList.add('added');
+    btn.textContent = '✓ Добавено';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.textContent = '+ Добави в количка';
+    }, 1500);
+  }
+
+  
+  let cart_local = [];
+
+  function addToCart(product) {
+    const existing = cart_local.find(i => i.id === product.id && i.size === product.size);
+    if (existing) existing.qty += 1;
+    else cart_local.push({ ...product, qty: 1 });
+    updateCartCount();
+    const btn = document.querySelector('.cart-btn');
+    btn.style.borderColor = 'var(--accent)'; btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.style.borderColor = ''; btn.style.color = ''; }, 700);
+  }
+
+  function removeFromCart(i) {
+    cart_local.splice(i, 1);
+    renderCart(); updateCartCount();
+  }
+
+  function updateCartCount() {
+    const total = cart_local.reduce((s, i) => s + i.qty, 0);
+    document.getElementById('cartCount').textContent = total;
+    document.getElementById('checkoutBtn').disabled = total === 0;
+  }
+
+  function cartTotalBGN() {
+    return cart_local.reduce((s, i) => s + i.price * i.qty, 0);
+  }
+
+  function renderCart() {
+    const box = document.getElementById('cartItems');
+    if (cart_local.length === 0) {
+      box.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛒</div><span>Количката е празна</span></div>`;
+    } else {
+      box.innerHTML = cart_local.map((item, i) => `
+        <div class="cart-item">
+          <div class="cart-item-thumb">${item.emoji || '📦'}</div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-meta">${item.size ? 'Размер: ' + item.size + ' · ' : ''}Бр: ${item.qty}</div>
+          </div>
+          <div class="cart-item-price">€${toEUR(item.price * item.qty)} <small style="color:var(--muted)">(${(item.price * item.qty).toFixed(2)} лв)</small></div>
+          <button class="cart-item-remove" onclick="removeFromCart(${i})">✕</button>
+        </div>`).join('');
+    }
+    document.getElementById('cartTotal').textContent = '€' + toEUR(cartTotalBGN()) + ' (' + cartTotalBGN().toFixed(2) + ' лв)';
+  }
+
+  function openCart() {
+    document.getElementById('cartBg').classList.add('open');
+    document.getElementById('cartModal').classList.add('open');
+    renderCart();
+  }
+  function closeCart() {
+    document.getElementById('cartBg').classList.remove('open');
+    document.getElementById('cartModal').classList.remove('open');
+  }
+  function openOrderForm() {
+    closeCart();
+    renderOrderSummary();
+    document.getElementById('orderModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+  }
+  function closeOrderForm() {
+    document.getElementById('orderModal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    openCart();
+  }
+  function closeAll() {
+    document.getElementById('orderModal').classList.remove('open');
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    cart_local = [];
+    updateCartCount(); renderCart();
+    document.getElementById('formContent').style.display = 'block';
+    document.getElementById('successScreen').classList.remove('show');
+  }
+
+  function renderOrderSummary() {
+    document.getElementById('orderSummaryItems').innerHTML = cart_local.map(item => `
+      <div class="order-summary-item">
+        <span>${item.name}${item.size ? ' ('+item.size+')' : ''} ×${item.qty}</span>
+        <span>€${toEUR(item.price * item.qty)} (${(item.price * item.qty).toFixed(2)} лв)</span>
+      </div>`).join('');
+    document.getElementById('orderSummaryTotal').textContent = '€' + toEUR(cartTotalBGN()) + ' (' + cartTotalBGN().toFixed(2) + ' лв)';
+  }
+
+  
+  async function submitOrder() {
+    const courier = document.getElementById('courier').value;
+    const fullName = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const office = document.getElementById('office').value.trim();
+    if (!courier || !fullName || !phone || !city || !office) {
+      alert('Моля попълни всички задължителни полета.'); return;
+    }
+    if (!/^\d{6,15}$/.test(phone.replace(/\s/g,''))) {
+      alert('Телефонният номер трябва да съдържа само цифри.'); return;
+    }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10"/></svg> Изпращане...</span>';
+
+    const orderData = {
+      action: 'placeOrder',
+      courier, fullName, phone, email, city, office,
+      items: cart_local.map(i => ({ name: i.name, size: i.size || '', qty: i.qty, price: i.price })),
+      total: cartTotalBGN().toFixed(2),
+      contactMode: (window._siteSettings || {}).contactMode || 'phone',
+      contactPhone: (window._siteSettings || {}).phone || '0876 127 997',
+      siteName: (window._siteSettings || {}).siteName || 'The Forbidden Style',
+      siteUrl: window.location.origin + window.location.pathname.replace('products.html', '')
+    };
+
+    try {
+      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
+    } catch(e) {
+      console.warn('fetch error:', e);
+    }
+
+    // Показваме успех след изпращане (независимо от резултата — no-cors не дава статус)
+    document.getElementById('formContent').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+  }
+
+  function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
+
+  
+  loadProducts();
+</script>
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav-btn prev" id="lightboxPrev" onclick="lightboxNav(-1)">‹</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+    <button class="lightbox-nav-btn next" id="lightboxNext" onclick="lightboxNav(1)">›</button>
+    <span class="lightbox-counter" id="lightboxCounter"></span>
+  </div>
+</div>
+
+</body>
+</html>
