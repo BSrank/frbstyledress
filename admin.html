@@ -497,7 +497,7 @@
 
 <script>
   // ─── CONFIG ───
-  var GITHUB_REPO   = 'BSrank/frbstyle';
+  var GITHUB_REPO   = 'BSrank/frbstyledress';
   const PRODUCTS_FILE = 'products.json';
   const SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbx3AdL0FZ0t6ofijx6VW4W3JZCVwXqeW8d32pp2YL2ACiY1DDBzuvli4L0znvtnJezj/exec';
   const PW_HASH       = '830ec5c1efee9ed79fee45e2a1da3ebb881d97167febdb1b71a35a20229b9956';
@@ -1174,8 +1174,7 @@
     var lbl = document.getElementById('label-showCategories');
     if (tog) tog.classList.toggle('on', showCat);
     if (lbl) { lbl.classList.toggle('on', showCat); lbl.textContent = showCat ? 'Показани' : 'Скрити'; }
-    var repoEl = document.getElementById('settings-repo');
-    if (repoEl) { repoEl.value = GITHUB_REPO; repoEl.placeholder = GITHUB_REPO; }
+    var scriptEl = document.getElementById('settings-scripturl');
     if (scriptEl) {
       if (siteSettings.scriptUrlEncoded) {
         scriptEl.placeholder = '(запазен — постави нов за да смениш)';
@@ -1262,7 +1261,7 @@
   }
 
   // ─── SCAN IMAGES ───
-  var SITE_URL = 'https://BSrank.github.io/frbstyle';
+  var SITE_URL = 'https://BSrank.github.io/frbstyledress';
 
   async function scanImages(idx) {
     var p = products[idx];
